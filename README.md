@@ -4,7 +4,7 @@
 [![PyPI version](https://badge.fury.io/py/dependence.svg?icon=si%3Apython)](https://badge.fury.io/py/dependence)
 
 Dependence provides a Command Line Interface and library for performing
-dependency upgrades, aligning a python projects' declared dependencies with
+dependency upgrades on a python project, aligning declared dependencies with
 the package versions installed in the environment in which `dependence` is
 executed, and for "freezing" recursively resolved package dependencies
 (like `pip freeze`, but for a package, instead of the entire environment).
@@ -20,7 +20,7 @@ You can install `dependence` with pip:
 pip3 install dependence
 ```
 
-## Example Usage
+## Usage
 
 ### Upgrading Dependencies
 
