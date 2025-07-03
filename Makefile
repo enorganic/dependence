@@ -25,35 +25,22 @@ distribute:
 # match. The same can be accomplished with `make reinstall`, but this
 # runs faster, because environments are not recreated.
 upgrade:
-	hatch run dependence freeze\
-	 -nv '*'\
+	hatch run dependence upgrade\
 	 --include-pointer /tool/hatch/envs/default\
 	 --include-pointer /project\
-	 pyproject.toml > .requirements.txt && \
-	hatch run pip install --upgrade --upgrade-strategy eager\
-	 -r .requirements.txt && \
-	hatch run docs:dependence freeze\
-	 -nv '*'\
+	 pyproject.toml && \
+	hatch run docs:dependence upgrade\
 	 --include-pointer /tool/hatch/envs/docs\
 	 --include-pointer /project\
-	 pyproject.toml > .requirements.txt && \
-	hatch run docs:pip install --upgrade --upgrade-strategy eager\
-	 -r .requirements.txt && \
-	hatch run hatch-static-analysis:dependence freeze\
-	 -nv '*'\
+	 pyproject.toml && \
+	hatch run hatch-static-analysis:dependence upgrade\
 	 --include-pointer /tool/hatch/envs/docs\
 	 --include-pointer /project\
-	 pyproject.toml > .requirements.txt && \
-	hatch run hatch-static-analysis:pip install --upgrade --upgrade-strategy eager\
-	 -r .requirements.txt && \
-	hatch run hatch-test.py$(PYTHON_VERSION):dependence freeze\
-	 -nv '*'\
+	 pyproject.toml && \
+	hatch run hatch-test.py$(PYTHON_VERSION):dependence upgrade\
 	 --include-pointer /tool/hatch/envs/hatch-test\
 	 --include-pointer /project\
-	 pyproject.toml > .requirements.txt && \
-	hatch run hatch-test.py$(PYTHON_VERSION):pip install --upgrade --upgrade-strategy eager\
-	 -r .requirements.txt && \
-	rm .requirements.txt && \
+	 pyproject.toml && \
 	make requirements
 
 # This will align project dependency versions with those installed in the
@@ -68,11 +55,6 @@ requirements:
 	 pyproject.toml && \
 	hatch run docs:dependence update pyproject.toml --include-pointer /tool/hatch/envs/docs && \
 	hatch run hatch-test.py$(PYTHON_VERSION):dependence update pyproject.toml --include-pointer /tool/hatch/envs/hatch-test
-
-# Test & check linting/formatting (for local use only)
-test:
-	{ hatch --version || pipx install --upgrade hatch || python3 -m pip install --upgrade hatch ; } && \
-	hatch run lint && hatch test
 
 
 # Apply formatting and enforce linting

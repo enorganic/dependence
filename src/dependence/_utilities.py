@@ -25,6 +25,7 @@ from typing import (
     Callable,
     TypedDict,
     cast,
+    overload,
 )
 from warnings import warn
 
@@ -35,6 +36,63 @@ from packaging.utils import canonicalize_name
 
 _BUILTIN_DISTRIBUTION_NAMES: tuple[str] = ("distribute",)
 _UNSAFE_CHARACTERS_PATTERN: re.Pattern = re.compile("[^A-Za-z0-9.]+")
+
+
+class DefinitionExistsError(Exception):
+    """
+    This error is raised when an attempt is made to redefine
+    a singleton class instance.
+    """
+
+
+_module_locals: dict[str, Any] = locals()
+
+
+class Undefined:
+    """
+    This class is intended to indicate that a parameter has not been passed
+    to a keyword argument in situations where `None` is to be used as a
+    meaningful value.
+
+    The `Undefined` class is a singleton, so only one instance of this class
+    is permitted: `sob.UNDEFINED`.
+    """
+
+    __module__ = "sob"
+
+    def __init__(self) -> None:
+        # Only one instance of `Undefined` is permitted, so initialization
+        # checks to make sure this is the first use.
+        if "UNDEFINED" in _module_locals:
+            message: str = f"{self!r} may only be instantiated once."
+            raise DefinitionExistsError(message)
+
+    def __repr__(self) -> str:
+        # Represent instances of this class using the qualified name for the
+        # constant `UNDEFINED`.
+        return "sob.UNDEFINED"
+
+    def __bool__(self) -> bool:
+        # `UNDEFINED` cast as a boolean is `False` (as with `None`)
+        return False
+
+    def __hash__(self) -> int:
+        return 0
+
+    def __eq__(self, other: object) -> bool:
+        # Another object is only equal to this if it shares the same id, since
+        # there should only be one instance of this class defined
+        return other is self
+
+    def __reduce__(self) -> tuple[Callable[[], Undefined], tuple]:
+        return _undefined, ()
+
+
+UNDEFINED: Undefined = Undefined()
+
+
+def _undefined() -> Undefined:
+    return UNDEFINED
 
 
 def iter_distinct(items: Iterable[Hashable]) -> Iterable:
@@ -292,10 +350,14 @@ class ConfigurationFileType(Enum):
 
 
 @functools.lru_cache
-def get_configuration_file_type(path: str) -> ConfigurationFileType:
-    if not os.path.isfile(path):
+def get_configuration_file_type(
+    path: str | Path, default: Any = UNDEFINED
+) -> ConfigurationFileType:
+    if isinstance(path, str):
+        path = Path(path)
+    if not path.is_file():
         raise FileNotFoundError(path)
-    basename: str = os.path.basename(path).lower()
+    basename: str = path.name.lower()
     if basename == "setup.cfg":
         return ConfigurationFileType.SETUP_CFG
     if basename == "tox.ini":
@@ -306,16 +368,54 @@ def get_configuration_file_type(path: str) -> ConfigurationFileType:
         return ConfigurationFileType.REQUIREMENTS_TXT
     if basename.endswith(".toml"):
         return ConfigurationFileType.TOML
-    message: str = f"{path} is not a recognized type of configuration file."
-    raise ValueError(message)
+    if default is UNDEFINED:
+        message: str = (
+            f"{path!s} is not a recognized type of configuration file."
+        )
+        raise ValueError(message)
+    return default
 
 
 def is_configuration_file(path: str) -> bool:
-    try:
-        get_configuration_file_type(path)
-    except (FileNotFoundError, ValueError):
-        return False
-    return True
+    return get_configuration_file_type(path, default=None) is not None
+
+
+@overload
+def iter_configuration_files(path: str) -> Iterable[str]: ...
+
+
+@overload
+def iter_configuration_files(path: Path) -> Iterable[Path]: ...
+
+
+def iter_configuration_files(path: str | Path) -> Iterable[Path | str]:
+    """
+    Iterate over the project configuration files for the given path.
+    If the path is a file path—yields only that path. If the path is a
+    directory, yields all configuration files in that directory.
+    """
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            child: Path
+            for child in filter(
+                Path.is_file,
+                (
+                    path.iterdir()
+                    if isinstance(path, Path)
+                    else Path(path).iterdir()
+                ),
+            ):
+                if (
+                    get_configuration_file_type(child, default=None)
+                    is not None
+                ):
+                    yield (
+                        child
+                        if isinstance(path, Path)
+                        else str(child.absolute())
+                    )
+        elif get_configuration_file_type(path, default=None) is not None:
+            yield path
 
 
 class _EditablePackageMetadata(TypedDict):

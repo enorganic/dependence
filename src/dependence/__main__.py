@@ -23,7 +23,10 @@ def _print_help() -> None:
         "installed\n"
         "                              distribution or project, in a similar "
         "format\n"
-        "                              to the output of `pip freeze`."
+        "                              to the output of `pip freeze`.\n"
+        "  upgrade                     Upgrade all dependencies and align "
+        "project\n"
+        "                              requirement specifiers to match."
     )
 
 

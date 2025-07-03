@@ -7,15 +7,16 @@ from functools import partial
 from importlib.metadata import Distribution
 from importlib.metadata import distribution as _get_distribution
 from itertools import chain
-from typing import cast
+from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 from dependence._utilities import (
     get_distribution,
     get_required_distribution_names,
     get_requirement_string_distribution_name,
     install_requirement,
-    is_configuration_file,
     iter_configuration_file_requirement_strings,
+    iter_configuration_files,
     iter_distinct,
     iter_parse_delimited_values,
     normalize_name,
@@ -74,8 +75,8 @@ def _iter_sort_dependents_last(requirements: Iterable[str]) -> Iterable[str]:
                 del dependent_dependencies[dependent]
 
 
-def get_frozen_requirements(
-    requirements: Iterable[str] = (),
+def get_frozen_requirements(  # noqa: C901
+    requirements: Iterable[str | Path] = (),
     *,
     exclude: Iterable[str] = (),
     exclude_recursive: Iterable[str] = (),
@@ -109,21 +110,30 @@ def get_frozen_requirements(
         exclude_pointers: A tuple of JSON pointers indicating elements to
             exclude (defaults to no exclusions). Only applies to TOML files.
     """
-    # Separate requirement strings from requirement files
-    if isinstance(requirements, str):
-        requirements = {requirements}
+    if isinstance(requirements, (str, Path)):
+        requirements = {str(requirements)}
     else:
-        requirements = set(requirements)
+        requirements = set(map(str, requirements))
     if isinstance(no_version, str):
         no_version = (no_version,)
     elif not isinstance(no_version, tuple):
         no_version = tuple(no_version)
-    requirement_files: MutableSet[str] = set(
-        filter(is_configuration_file, requirements)
-    )
-    requirement_strings: MutableSet[str] = cast(
-        MutableSet[str], requirements - requirement_files
-    )
+    # Separate requirement strings from requirement files
+    configuration_files: MutableSet[str] = set()
+    requirement_strings: MutableSet[str] = set()
+    requirement: str | Path
+    for requirement in requirements:
+        if TYPE_CHECKING:
+            assert isinstance(requirement, str)
+        requirement_configuration_files: set[str] = set(
+            iter_configuration_files(requirement)
+        )
+        if requirement_configuration_files:
+            configuration_files |= requirement_configuration_files
+        else:
+            if requirement.startswith("setup.py"):
+                raise ValueError(requirement)
+            requirement_strings.add(requirement)
     frozen_requirements: Iterable[str] = iter_distinct(
         chain(
             requirement_strings,
@@ -133,10 +143,11 @@ def get_frozen_requirements(
                     include_pointers=include_pointers,
                     exclude_pointers=exclude_pointers,
                 ),
-                requirement_files,
+                configuration_files,
             ),
         )
     )
+    frozen_requirements = tuple(frozen_requirements)
     if depth is not None:
         depth -= 1
     if (depth is None) or depth >= 0:
@@ -242,7 +253,7 @@ def _iter_frozen_requirements(
 
 
 def freeze(
-    requirements: Iterable[str] = (),
+    requirements: Iterable[str | Path] = (),
     *,
     exclude: Iterable[str] = (),
     exclude_recursive: Iterable[str] = (),
@@ -263,9 +274,10 @@ def freeze(
             paths to a setup.py, setup.cfg, pyproject.toml, tox.ini or
             requirements.txt file
         exclude: One or more distributions to exclude/ignore
-        exclude_recursive: One or more distributions to exclude/ignore.
-            Note: Excluding a distribution here halts recursive
-            discovery of requirements.
+        exclude_recursive: One or more distributions to exclude.
+        exclude_recursive: One or more distributions to exclude. Recursive
+            dependency discovery is also halted for these distributions,
+            unlike those passed to `exclude`.
         no_version: Exclude version numbers from the output
             (only print distribution names) for package names matching any of
             these patterns

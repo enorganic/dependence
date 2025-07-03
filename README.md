@@ -3,11 +3,11 @@
 [![test](https://github.com/enorganic/dependence/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/enorganic/dependence/actions/workflows/test.yml)
 [![PyPI version](https://badge.fury.io/py/dependence.svg?icon=si%3Apython)](https://badge.fury.io/py/dependence)
 
-Dependence provides a Command Line Interface and library for aligning
-a python projects' declared dependencies with the package versions
-installed in the environment in which `dependence` is executed, and for
-"freezing" recursively resolved package dependencies (like `pip freeze`, but
-for a package, instead of the entire environment).
+Dependence provides a Command Line Interface and library for performing
+dependency upgrades, aligning a python projects' declared dependencies with
+the package versions installed in the environment in which `dependence` is
+executed, and for "freezing" recursively resolved package dependencies
+(like `pip freeze`, but for a package, instead of the entire environment).
 
 - [Documentation](https://enorganic.github.io/dependence/)
 - [Contributing](https://enorganic.github.io/dependence/contributing)
@@ -22,6 +22,71 @@ pip3 install dependence
 
 ## Example Usage
 
+### Upgrading Dependencies
+
+The `dependence upgrade` command, and the `dependence.upgrade.upgrade`
+function, discover and upgrade project and environment dependencies in the
+environment in which dependence is installed to their latest version
+aligned with project and dependency requirements, then selectively update
+requirement specifiers in any specified TOML files (such as pyproject.toml),
+setup.cfg file, requirements.txt files, or tox.ini files. Because
+pyproject.toml files may contain dependencies for more than one environment,
+such as when using [hatch](https://hatch.pypa.io/) environments,
+[JSON-style pointers](https://datatracker.ietf.org/doc/html/rfc6901) are used
+to include or exclude specific parts of TOML files.
+
+For example, in [this project's Makefile
+](https://github.com/enorganic/dependence/blob/main/Makefile#L27), we define a
+`make upgrade` target as follows:
+
+```Makefile
+SHELL := bash
+PYTHON_VERSION := 3.9
+
+upgrade:
+    hatch run dependence upgrade\
+     --include-pointer /tool/hatch/envs/default\
+     --include-pointer /project\
+     pyproject.toml && \
+    hatch run docs:dependence upgrade\
+     --include-pointer /tool/hatch/envs/docs\
+     --include-pointer /project\
+     pyproject.toml && \
+    hatch run hatch-static-analysis:dependence upgrade\
+     --include-pointer /tool/hatch/envs/docs\
+     --include-pointer /project\
+     pyproject.toml && \
+    hatch run hatch-test.py$(PYTHON_VERSION):dependence upgrade\
+     --include-pointer /tool/hatch/envs/hatch-test\
+     --include-pointer /project\
+     pyproject.toml && \
+    make requirements
+```
+
+You can reference the [associated pyproject.toml file for this project
+](https://github.com/enorganic/dependence/blob/main/pyproject.toml#L21)
+for reference concerning the implications of `--include-pointer`, which
+uses identical syntax to [JSON pointers
+](https://datatracker.ietf.org/doc/html/rfc6901). The `--exclude-pointer`
+parameter works identically, but in reverse. If both `--include-pointer`
+and `--exclude-pointer` are used, only sections which match both conditions
+will be updated.
+
+You may refer to the [`dependence upgrade` CLI reference](./cli.md#dependence-upgrade)
+and/or [`dependence.upgrade` API reference](./api/upgrade.md) for details
+concerning this command/module, related options, and more complex use case
+examples.
+
+The `dependence upgrade` command, and the `dependence.upgrade.upgrade`
+function, are simply a composite of the dependency listing and update
+functionalities covered below, but which a `pip install --upgrade`
+command executed in between—so please read further for additional details.
+All parameters are directly passed, with the exception of
+`--ignore-update`/`ignore_update`, which is translated to the
+`--ignore`/`ignore` parameter for
+`dependence update`/`dependence.update.update` (renamed in this operation
+for clarity of purpose).
+
 ### Listing Dependencies
 
 The `dependence freeze` command, and the `dependence.freeze.freeze` function,
@@ -30,8 +95,8 @@ requirements.txt, pyproject.toml, setup.cfg, or tox.ini files. The output
 format matches that of `pip freeze`, but only lists dependencies of indicated
 packages and/or editable project locations.
 
-You may refer to the [`dependence freeze` CLI reference](https://dependence.enorganic.org/cli/#dependence-freeze)
-and/or [`dependence.freeze` API reference](https://dependence.enorganic.org/api/freeze/) for details
+You may refer to the [`dependence freeze` CLI reference](./cli.md#dependence-freeze)
+and/or [`dependence.freeze` API reference](./api/freeze.md) for details
 concerning this command/module, related options, and more complex use case
 examples.
 
@@ -156,7 +221,7 @@ updated? By design. Here are the rules `dependence update` adheres to:
 -   If your requirement is unversioned, we don't touch it, of course. This is
     why you didn't see any change for "pip".
 
-You may refer to the [`dependence update` CLI reference](https://dependence.enorganic.org/cli/#dependence-update)
-and/or [`dependence.update` API reference](https://dependence.enorganic.org/api/update/) for details
+You may refer to the [`dependence update` CLI reference](./cli.md#dependence-update)
+and/or [`dependence.update` API reference](./api/update.md) for details
 concerning this command/module, related options, and more complex use
 cases/examples.
