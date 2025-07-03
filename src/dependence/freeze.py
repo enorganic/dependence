@@ -273,8 +273,7 @@ def freeze(
             "requirement-name[extra-a,extra-b]" or ".[extra-a, extra-b]) and/or
             paths to a setup.py, setup.cfg, pyproject.toml, tox.ini or
             requirements.txt file
-        exclude: One or more distributions to exclude/ignore
-        exclude_recursive: One or more distributions to exclude.
+        exclude: One or more distributions to exclude.
         exclude_recursive: One or more distributions to exclude. Recursive
             dependency discovery is also halted for these distributions,
             unlike those passed to `exclude`.
