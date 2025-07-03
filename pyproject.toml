@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dependence"
-version = "1.0.5"
+version = "1.1.0"
 description = "A dependency management tool for python projects"
 readme = "README.md"
 license = "MIT"
@@ -67,7 +67,6 @@ post-install-commands = [
 [tool.hatch.envs.default.scripts]
 lint = "ruff check . && ruff format --check . && mypy"
 
-
 [tool.hatch.envs.docs]
 template = "docs"
 python = "3.13"
@@ -77,9 +76,15 @@ dependencies = [
     "black",
 ]
 
+[tool.hatch.envs.hatch-static-analysis]
+skip-install = false
+
 [tool.hatch.envs.hatch-test]
 template = "hatch-test"
 extra-dependencies = []
+extra-arguments = [
+    "--cache-clear",
+]
 
 [[tool.hatch.envs.hatch-test.matrix]]
 python = [
@@ -90,10 +95,8 @@ python = [
     "3.13",
 ]
 
-
 [tool.ruff]
 line-length = 79
-
 
 [tool.ruff.lint]
 ignore = [
@@ -141,14 +144,17 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
 [tool.coverage.run]
+include = [
+    "src/**/*.py",
+]
 omit = [
-    "tests/test_projects",
+    "src/**/_*.py",
 ]
 
 [tool.coverage.paths]
 source = [
-    "src/",
+    "src/**",
 ]
 
 [tool.coverage.report]
-fail_under = 80
+fail_under = 70

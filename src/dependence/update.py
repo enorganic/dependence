@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from io import StringIO
 from itertools import chain
+from pathlib import Path
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -423,12 +424,13 @@ def _get_updated_toml(
 
 
 def _update(
-    path: str,
+    path: str | Path,
     ignore: Iterable[str] = (),
     all_extra_name: str = "",
     include_pointers: tuple[str, ...] = (),
     exclude_pointers: tuple[str, ...] = (),
 ) -> None:
+    message: str
     data: str
     update_function: Callable[[str], str]
     kwargs: dict[str, str | Iterable[str]] = {}
@@ -457,8 +459,8 @@ def _update(
     elif configuration_file_type == ConfigurationFileType.REQUIREMENTS_TXT:
         update_function = _get_updated_requirements_txt
     else:
-        msg = f"Updating requirements for {path} is not supported"
-        raise NotImplementedError(msg)
+        message = f"Updating requirements for {path!s} is not supported"
+        raise NotImplementedError(message)
     kwargs["ignore"] = ignore
     file_io: IO[str]
     with open(path) as file_io:
@@ -466,18 +468,19 @@ def _update(
     updated_data: str = update_function(data, **kwargs)
     if updated_data == data:
         print(  # noqa: T201
-            f"All requirements were already up-to-date in {path}"
+            f"All requirements were already up-to-date in {path!s}"
         )
     else:
         print(  # noqa: T201
-            f"Updating requirements in {path}"
+            f"Updating requirements in {path!s}"
         )
         with open(path, "w") as file_io:
             file_io.write(updated_data)
 
 
 def update(
-    paths: Iterable[str],
+    paths: Iterable[str | Path],
+    *,
     ignore: Iterable[str] = (),
     all_extra_name: str = "",
     include_pointers: tuple[str, ...] = (),
@@ -487,22 +490,27 @@ def update(
     Update requirement versions in the specified files.
 
     Parameters:
-        path: One or more local paths to a setup.cfg,
+        paths: One or more local paths to a pyproject.toml,
             setup.cfg, and/or requirements.txt files
-        ignore: One or more project names to ignore (leave as-is)
+        ignore: One or more project/package names to ignore (leave
+            as-is) when updating dependency requirement specifiers.
         all_extra_name: If provided, an extra which consolidates
             the requirements for all other extras will be added/updated to
-            setup.cfg or setup.cfg (this argument is ignored for
+            pyproject.toml or setup.cfg (this argument is ignored for
             requirements.txt files)
         include_pointers: A tuple of JSON pointers indicating elements to
-            include (defaults to all elements).
+            include (defaults to all elements). This applies only to TOML
+            files (including pyproject.toml), and is ignored for all other
+            file types.
         exclude_pointers: A tuple of JSON pointers indicating elements to
-            exclude (defaults to no exclusions).
+            exclude (defaults to no exclusions). This applies only to TOML
+            files (including pyproject.toml), and is ignored for all other
+            file types.
     """
-    if isinstance(paths, str):
+    if isinstance(paths, (str, Path)):
         paths = (paths,)
 
-    def update_(path: str) -> None:
+    def update_(path: str | Path) -> None:
         _update(
             path,
             ignore=ignore,

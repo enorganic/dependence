@@ -12,6 +12,8 @@ Commands:
   freeze                      Print dependencies inferred from an installed
                               distribution or project, in a similar format
                               to the output of `pip freeze`.
+  upgrade                     Upgrade all dependencies and align project
+                              requirement specifiers to match.
 ```
 
 ## dependence update
@@ -119,3 +121,60 @@ optional arguments:
                         One or more JSON pointers of elements to *exclude*
                         (applies to TOML files only)
 ```
+
+## dependence upgrade
+
+```console
+$ dependence upgrade -h
+usage: dependence upgrade [-h] [-iu IGNORE_UPDATE] [-aen ALL_EXTRA_NAME]
+                          [--include-pointer INCLUDE_POINTER]
+                          [--exclude-pointer EXCLUDE_POINTER] [-e EXCLUDE]
+                          [-er EXCLUDE_RECURSIVE] [-d DEPTH]
+                          requirement [requirement ...]
+
+Upgrade all dependencies for specified packages/projects, then upgrade
+version specifiers in the project files to align with newly installed
+versions of each distribution.
+
+positional arguments:
+  requirement           One or more requirement specifiers (for example:
+                        "requirement-name", "requirement-
+                        name[extra-a,extra-b]", ".[extra-a, extra-b]" or
+                        "../other-editable-package-directory[extra-a,
+                        extra-b]) and/or paths to a setup.py, setup.cfg,
+                        pyproject.toml, tox.ini or requirements.txt file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -iu IGNORE_UPDATE, --ignore-update IGNORE_UPDATE
+                        A comma-separated list of distributions to ignore
+                        (leave any requirements pertaining to the package
+                        as-is) when updating project files
+  -aen ALL_EXTRA_NAME, --all-extra-name ALL_EXTRA_NAME
+                        If provided, an extra which consolidates the
+                        requirements for all other extras will be
+                        added/updated to pyproject.toml or setup.cfg (this
+                        argument is ignored for requirements.txt files and
+                        other TOML files)
+  --include-pointer INCLUDE_POINTER
+                        One or more JSON pointers of elements to *include*
+                        (applies to TOML files only)
+  --exclude-pointer EXCLUDE_POINTER
+                        One or more JSON pointers of elements to *exclude*
+                        (applies to TOML files only)
+  -e EXCLUDE, --exclude EXCLUDE
+                        A distribution (or comma-separated list of
+                        distributions) to exclude when performing upgrades
+  -er EXCLUDE_RECURSIVE, --exclude-recursive EXCLUDE_RECURSIVE
+                        A distribution (or comma-separated list of
+                        distributions) to exclude when performing upgrades.
+                        Unlike -e / --exclude, this argument also precludes
+                        recursive requirement discovery for the specified
+                        packages, thereby excluding all of the excluded
+                        package's requirements which are not required by
+                        another (non-excluded) distribution from the
+                        upgrade.
+  -d DEPTH, --depth DEPTH
+                        Depth of recursive requirement discovery
+```
+
