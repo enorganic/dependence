@@ -126,11 +126,11 @@ def get_frozen_requirements(  # noqa: C901
     for requirement in requirements:
         if TYPE_CHECKING:
             assert isinstance(requirement, str)
-        is_directory: bool = os.path.isdir(requirement)
         requirement_configuration_files: set[str] = set(
             iter_configuration_files(requirement)
         )
         if requirement_configuration_files:
+            is_directory: bool = os.path.isdir(requirement)
             for (
                 requirement_configuration_file
             ) in requirement_configuration_files:
