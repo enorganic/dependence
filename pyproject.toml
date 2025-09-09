@@ -1,23 +1,16 @@
 [build-system]
-requires = [
-    "hatchling",
-]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "dependence"
-version = "1.1.1"
+version = "1.1.2"
 description = "A dependency management tool for python projects"
 readme = "README.md"
 license = "MIT"
 requires-python = "~=3.9"
-authors = [
-    { email = "david@belais.me" },
-]
-keywords = [
-    "dependencies",
-    "requirements",
-]
+authors = [{ email = "david@belais.me" }]
+keywords = ["dependencies", "requirements"]
 dependencies = [
     "packaging",
     "pip",
@@ -35,31 +28,17 @@ Documentation = "https://dependence.enorganic.org"
 Repository = "https://github.com/enorganic/dependence"
 
 [tool.hatch.build.targets.sdist]
-packages = [
-    "src/dependence",
-]
-sources = [
-    "src",
-]
+packages = ["src/dependence"]
+sources = ["src"]
 
 [tool.hatch.build.targets.wheel]
-packages = [
-    "src/dependence",
-]
-sources = [
-    "src",
-]
+packages = ["src/dependence"]
+sources = ["src"]
 
 [tool.hatch.envs.default]
 python = "3.9"
-dependencies = [
-    "mypy",
-    "pytest",
-    "ruff",
-]
-pre-install-commands = [
-    "pip install --upgrade pip setuptools",
-]
+dependencies = ["mypy", "pytest", "ruff"]
+pre-install-commands = ["pip install --upgrade pip setuptools"]
 post-install-commands = [
     "hatch run mypy --install-types --non-interactive || echo",
 ]
@@ -70,11 +49,7 @@ lint = "ruff check . && ruff format --check . && mypy"
 [tool.hatch.envs.docs]
 template = "docs"
 python = "3.13"
-dependencies = [
-    "mkdocs-material",
-    "mkdocstrings[python]",
-    "black",
-]
+dependencies = ["mkdocs-material", "mkdocstrings[python]", "black"]
 
 [tool.hatch.envs.hatch-static-analysis]
 skip-install = false
@@ -82,37 +57,17 @@ skip-install = false
 [tool.hatch.envs.hatch-test]
 template = "hatch-test"
 extra-dependencies = []
-extra-arguments = [
-    "--cache-clear",
-]
+extra-arguments = ["--cache-clear"]
 
 [[tool.hatch.envs.hatch-test.matrix]]
-python = [
-    "3.9",
-    "3.10",
-    "3.11",
-    "3.12",
-    "3.13",
-]
+python = ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
 [tool.ruff]
 line-length = 79
 
 [tool.ruff.lint]
-ignore = [
-    "F842",
-    "INP001",
-]
-extend-select = [
-    "E",
-    "F",
-    "UP",
-    "B",
-    "SIM",
-    "I",
-    "C",
-    "N",
-]
+ignore = ["F842", "INP001"]
+extend-select = ["E", "F", "UP", "B", "SIM", "I", "C", "N"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
@@ -123,38 +78,21 @@ docstring-code-line-length = 20
 
 [tool.black]
 line-length = 79
-target-version = [
-    "py39",
-    "py310",
-    "py311",
-    "py312",
-    "py313",
-]
+target-version = ["py39", "py310", "py311", "py312", "py313"]
 
 [tool.mypy]
 python_version = "3.9"
-files = [
-    "src",
-    "tests",
-]
-exclude = [
-    "tests/test_projects",
-]
+files = ["src", "tests"]
+exclude = ["tests/test_projects"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
 [tool.coverage.run]
-include = [
-    "src/**/*.py",
-]
-omit = [
-    "src/**/_*.py",
-]
+include = ["src/**/*.py"]
+omit = ["src/**/_*.py"]
 
 [tool.coverage.paths]
-source = [
-    "src/**",
-]
+source = ["src/**"]
 
 [tool.coverage.report]
 fail_under = 70

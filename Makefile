@@ -40,8 +40,7 @@ upgrade:
 	hatch run hatch-test.py$(PYTHON_VERSION):dependence upgrade\
 	 --include-pointer /tool/hatch/envs/hatch-test\
 	 --include-pointer /project\
-	 pyproject.toml && \
-	make requirements
+	 pyproject.toml
 
 # This will align project dependency versions with those installed in the
 # default environment

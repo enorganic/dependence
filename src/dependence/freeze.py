@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from collections.abc import Iterable, MutableSet
 from fnmatch import fnmatch
 from functools import partial
@@ -119,31 +120,48 @@ def get_frozen_requirements(  # noqa: C901
     elif not isinstance(no_version, tuple):
         no_version = tuple(no_version)
     # Separate requirement strings from requirement files
-    configuration_files: MutableSet[str] = set()
+    configuration_files: dict[str, dict[str, tuple[str, ...]]] = {}
     requirement_strings: MutableSet[str] = set()
     requirement: str | Path
     for requirement in requirements:
         if TYPE_CHECKING:
             assert isinstance(requirement, str)
+        is_directory: bool = os.path.isdir(requirement)
         requirement_configuration_files: set[str] = set(
             iter_configuration_files(requirement)
         )
         if requirement_configuration_files:
-            configuration_files |= requirement_configuration_files
+            for (
+                requirement_configuration_file
+            ) in requirement_configuration_files:
+                configuration_files[requirement_configuration_file] = (
+                    {"include_pointers": ("/project",)}
+                    if (
+                        is_directory
+                        and os.path.basename(
+                            requirement_configuration_file
+                        ).lower()
+                        == "pyproject.toml"
+                    )
+                    else {
+                        "include_pointers": include_pointers,
+                        "exclude_pointers": exclude_pointers,
+                    }
+                )
         else:
             if requirement.startswith("setup.py"):
                 raise ValueError(requirement)
             requirement_strings.add(requirement)
+    configuration_file: str
+    kwargs: dict[str, tuple[str, ...]]
     frozen_requirements: Iterable[str] = iter_distinct(
         chain(
             requirement_strings,
-            *map(
-                partial(
-                    iter_configuration_file_requirement_strings,
-                    include_pointers=include_pointers,
-                    exclude_pointers=exclude_pointers,
-                ),
-                configuration_files,
+            *(
+                iter_configuration_file_requirement_strings(
+                    configuration_file, **kwargs
+                )
+                for configuration_file, kwargs in configuration_files.items()
             ),
         )
     )
