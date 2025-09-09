@@ -137,6 +137,9 @@ def _get_updated_requirement_string(
     except KeyError:
         # If the requirement isn't installed, we can't update the version
         pass
+    except TypeError as error:
+        message = f"Unable to determine installed version for {requirement}"
+        raise ValueError(message) from error
     return str(requirement)
 
 
