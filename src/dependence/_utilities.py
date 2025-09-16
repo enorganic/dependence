@@ -95,6 +95,44 @@ def _undefined() -> Undefined:
     return UNDEFINED
 
 
+cache: Any
+try:
+    from functools import cache  # type: ignore
+except ImportError:
+    from functools import lru_cache
+
+    cache = lru_cache(maxsize=None)
+
+
+def as_tuple(
+    user_function: Callable[..., Iterable[Any]],
+) -> Callable[..., tuple[Any, ...]]:
+    """
+    This is a decorator which will return an iterable as a tuple.
+    """
+
+    def wrapper(*args: Any, **kwargs: Any) -> tuple[Any, ...]:
+        return tuple(user_function(*args, **kwargs) or ())
+
+    return functools.update_wrapper(wrapper, user_function)
+
+
+def as_cached_tuple(
+    maxsize: int | None = None, *, typed: bool = False
+) -> Callable[[Callable[..., Iterable[Any]]], Callable[..., tuple[Any, ...]]]:
+    """
+    This is a decorator which will return an iterable as a tuple,
+    and cache that tuple.
+
+    Parameters:
+
+    - maxsize (int|None) = None: The maximum number of items to cache.
+    - typed (bool) = False: For class methods, should the cache be distinct for
+      sub-classes?
+    """
+    return functools.lru_cache(maxsize=maxsize, typed=typed)(as_tuple)
+
+
 def iter_distinct(items: Iterable[Hashable]) -> Iterable:
     """
     Yield distinct elements, preserving order
@@ -418,14 +456,8 @@ def iter_configuration_files(path: str | Path) -> Iterable[Path | str]:
             yield path
 
 
-class _EditablePackageMetadata(TypedDict):
-    name: str
-    version: str
-    editable_project_location: str
-
-
 def _iter_editable_distribution_locations() -> Iterable[tuple[str, str]]:
-    metadata: _EditablePackageMetadata
+    metadata: _PackageMetadata
     for metadata in json.loads(
         check_output(
             (
@@ -453,10 +485,38 @@ def get_editable_distributions_locations() -> dict[str, str]:
     return dict(_iter_editable_distribution_locations())
 
 
+class _PackageMetadata(TypedDict, total=False):
+    name: str
+    version: str
+    editable_project_location: str
+
+
+@cache
+def map_pip_list() -> dict[str, _PackageMetadata]:
+    names_package_metadata: dict[str, _PackageMetadata] = {}
+    package_metadata: _PackageMetadata
+    for package_metadata in json.loads(
+        check_output(
+            (
+                sys.executable,
+                "-m",
+                "pip",
+                "list",
+                "--format=json",
+            )
+        )
+    ):
+        names_package_metadata[normalize_name(package_metadata["name"])] = (
+            package_metadata
+        )
+    return names_package_metadata
+
+
 def cache_clear() -> None:
     """
     Clear distribution metadata caches
     """
+    map_pip_list.cache_clear()
     get_installed_distributions.cache_clear()
     get_editable_distributions_locations.cache_clear()
     is_editable.cache_clear()
@@ -482,7 +542,13 @@ def get_installed_distributions() -> dict[str, Distribution]:
     refresh_editable_distributions()
     installed: dict[str, Distribution] = {}
     for distribution in _get_distributions():
-        installed[normalize_name(distribution.metadata["Name"])] = distribution
+        name: str = distribution.metadata["Name"]
+        if distribution.version is None:
+            # If no version can be found, use pip to find the version
+            distribution.metadata["Version"] = (
+                map_pip_list().get(name, {}).get("version")
+            )
+        installed[normalize_name(name)] = distribution
     return installed
 
 
@@ -975,6 +1041,10 @@ def _get_requirement_name(requirement: Requirement) -> str:
     return normalize_name(requirement.name)
 
 
+@deprecated(
+    "dependence._utilities.install_requirement is deprecated and will be "
+    "removed in a future release."
+)
 def install_requirement(requirement: str | Requirement) -> None:
     """
     Install a requirement
@@ -1079,31 +1149,15 @@ def _install_requirement(
     cache_clear()
 
 
-def _get_requirement_distribution(
-    requirement: Requirement,
+def _get_installed_distribution(
     name: str,
-    *,
-    reinstall: bool = True,
-    echo: bool = False,
 ) -> Distribution | None:
     if name in _BUILTIN_DISTRIBUTION_NAMES:
         return None
     try:
         return get_installed_distributions()[name]
     except KeyError:
-        if not reinstall:
-            raise
-        if echo:
-            warn(
-                f'The required distribution "{name}" was not installed, '
-                "attempting to install it now...",
-                stacklevel=2,
-            )
-        # Attempt to install the requirement...
-        install_requirement(requirement)
-        return _get_requirement_distribution(
-            requirement, name, reinstall=False, echo=echo
-        )
+        return None
 
 
 def _iter_distribution_requirements(
@@ -1140,9 +1194,7 @@ def _iter_requirement_names(
     # Ensure we don't follow the same requirement again, causing cyclic
     # recursion
     exclude.add(name)
-    distribution: Distribution | None = _get_requirement_distribution(
-        requirement, name, echo=echo
-    )
+    distribution: Distribution | None = _get_installed_distribution(name)
     if distribution is None:
         return ()
     requirements: tuple[Requirement, ...] = tuple(
