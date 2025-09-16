@@ -5,8 +5,6 @@ import os
 from collections.abc import Iterable, MutableSet
 from fnmatch import fnmatch
 from functools import partial
-from importlib.metadata import Distribution
-from importlib.metadata import distribution as _get_distribution
 from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
@@ -15,13 +13,15 @@ from dependence._utilities import (
     get_distribution,
     get_required_distribution_names,
     get_requirement_string_distribution_name,
-    install_requirement,
     iter_configuration_file_requirement_strings,
     iter_configuration_files,
     iter_distinct,
     iter_parse_delimited_values,
     normalize_name,
 )
+
+if TYPE_CHECKING:
+    from importlib.metadata import Distribution
 
 _DO_NOT_PIN_DISTRIBUTION_NAMES: MutableSet[str] = {
     "importlib-metadata",
@@ -218,7 +218,7 @@ def _iter_frozen_requirements(
     no_version: Iterable[str] = (),
     depth: int | None = None,
 ) -> Iterable[str]:
-    def get_requirement_string(distribution_name: str) -> str:
+    def get_requirement_string(distribution_name: str) -> str | None:
         def distribution_name_matches_pattern(pattern: str) -> bool:
             return fnmatch(distribution_name, pattern)
 
@@ -230,9 +230,11 @@ def _iter_frozen_requirements(
         try:
             distribution = get_distribution(distribution_name)
         except KeyError:
+            # If the distribution is not installed, skip it
+            return None
             # If the distribution is missing, install it
-            install_requirement(distribution_name)
-            distribution = _get_distribution(distribution_name)
+            # install_requirement(distribution_name)
+            # distribution = _get_distribution(distribution_name)
         return f"{distribution.metadata['Name']}=={distribution.version}"
 
     def get_required_distribution_names_(
@@ -267,7 +269,7 @@ def _iter_frozen_requirements(
             )
         ),
     )
-    return map(get_requirement_string, requirements)
+    return filter(None, map(get_requirement_string, requirements))
 
 
 def freeze(

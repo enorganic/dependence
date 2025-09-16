@@ -133,12 +133,17 @@ def _get_updated_requirement_string(
         return requirement_string
     try:
         distribution: Distribution = get_installed_distributions()[name]
+        if distribution.version is None:
+            return requirement_string
         _update_requirement_specifiers(requirement, distribution.version)
     except KeyError:
         # If the requirement isn't installed, we can't update the version
         pass
     except TypeError as error:
-        message = f"Unable to determine installed version for {requirement}"
+        message: str = (
+            f"Unable to determine installed version for {requirement_string}: "
+            f"{distribution!r}"
+        )
         raise ValueError(message) from error
     return str(requirement)
 

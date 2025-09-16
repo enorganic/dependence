@@ -70,3 +70,7 @@ test:
 docs:
 	hatch run docs:mkdocs build && \
 	hatch run docs:mkdocs serve
+
+# Cleanup untracked files
+clean:
+	git clean -f -e .vscode -e .idea -x . -e .env -e .devcontainer
