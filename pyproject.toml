@@ -56,7 +56,7 @@ skip-install = false
 
 [tool.hatch.envs.hatch-test]
 template = "hatch-test"
-extra-dependencies = []
+extra-dependencies = ["ruff", "mypy", "flake8", "tox", "black"]
 extra-arguments = ["--cache-clear"]
 
 [[tool.hatch.envs.hatch-test.matrix]]

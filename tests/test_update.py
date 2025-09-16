@@ -36,9 +36,8 @@ def is_zero(value: int) -> bool:
 
 def validate_nonzero_specifier(specifier: Specifier) -> None:
     # Ensure this release version is not 0, 0.0, 0.0.0, etc.
-    assert any(map(is_nonzero, Version(specifier.version).release)), str(
-        specifier
-    )
+    if not any(map(is_nonzero, Version(specifier.version).release)):
+        raise ValueError(specifier)
 
 
 def validate_zero_specifier(specifier: Specifier) -> None:
@@ -60,19 +59,22 @@ def validate_requirement(requirement_string: str) -> None:
                 maxlen=0,
             )
         else:
-            deque(
-                map(
-                    validate_nonzero_specifier,  # type: ignore
-                    requirement.specifier,
-                ),
-                maxlen=0,
-            )
+            try:
+                deque(
+                    map(
+                        validate_nonzero_specifier,  # type: ignore
+                        requirement.specifier,
+                    ),
+                    maxlen=0,
+                )
+            except ValueError as error:
+                raise ValueError(requirement) from error
 
 
 def validate_requirements(requirements: Iterable[str]) -> None:
     if isinstance(requirements, str):
         requirements = requirements.split("\n")
-    list(map(validate_requirement, requirements))
+    deque(map(validate_requirement, requirements), maxlen=0)
 
 
 def test_get_updated_setup_cfg() -> None:
