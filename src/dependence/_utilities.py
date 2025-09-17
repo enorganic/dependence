@@ -4,6 +4,7 @@ import functools
 import json
 import os
 import re
+import shutil
 import sys
 from collections import deque
 from collections.abc import Container, Hashable, Iterable, MutableSet
@@ -456,60 +457,66 @@ def iter_configuration_files(path: str | Path) -> Iterable[Path | str]:
             yield path
 
 
-def _iter_editable_distribution_locations() -> Iterable[tuple[str, str]]:
-    metadata: _PackageMetadata
-    for metadata in json.loads(
-        check_output(
-            (
-                sys.executable,
-                "-m",
-                "pip",
-                "list",
-                "--editable",
-                "--format=json",
+def _iter_editable_project_locations() -> Iterable[tuple[str, str]]:
+    metadata: PackageMetadata
+    for name, metadata in map_pip_list().items():
+        editable_project_location: str | None = metadata.get(
+            "editable_project_location"
+        )
+        if editable_project_location:
+            yield (
+                name,
+                editable_project_location,
             )
-        )
-    ):
-        yield (
-            normalize_name(metadata["name"]),
-            metadata["editable_project_location"],
-        )
 
 
 @functools.lru_cache
-def get_editable_distributions_locations() -> dict[str, str]:
+def map_editable_project_locations() -> dict[str, str]:
     """
     Get a mapping of (normalized) editable distribution names to their
     locations.
     """
-    return dict(_iter_editable_distribution_locations())
+    return dict(_iter_editable_project_locations())
 
 
-class _PackageMetadata(TypedDict, total=False):
+class PackageMetadata(TypedDict, total=False):
     name: str
     version: str
     editable_project_location: str
 
 
+def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:
+    uv: str | None = shutil.which("uv")
+    command: tuple[str, ...]
+    if uv:
+        command = (
+            uv,
+            "pip",
+            "list",
+            "--python",
+            sys.executable,
+            "--format=json",
+        )
+    else:
+        # If `uv` is not available, use `pip`
+        command = (
+            sys.executable,
+            "-m",
+            "pip",
+            "list",
+            "--format=json",
+        )
+    metadata: PackageMetadata
+    for metadata in json.loads(check_output(command)):
+        yield (
+            normalize_name(metadata["name"]),
+            metadata,
+        )
+
+
 @cache
-def map_pip_list() -> dict[str, _PackageMetadata]:
-    names_package_metadata: dict[str, _PackageMetadata] = {}
-    package_metadata: _PackageMetadata
-    for package_metadata in json.loads(
-        check_output(
-            (
-                sys.executable,
-                "-m",
-                "pip",
-                "list",
-                "--format=json",
-            )
-        )
-    ):
-        names_package_metadata[normalize_name(package_metadata["name"])] = (
-            package_metadata
-        )
-    return names_package_metadata
+def map_pip_list() -> dict[str, PackageMetadata]:
+    return dict(_iter_pip_list())
 
 
 def cache_clear() -> None:
@@ -518,7 +525,7 @@ def cache_clear() -> None:
     """
     map_pip_list.cache_clear()
     get_installed_distributions.cache_clear()
-    get_editable_distributions_locations.cache_clear()
+    map_editable_project_locations.cache_clear()
     is_editable.cache_clear()
     is_installed.cache_clear()
     get_requirement_string_distribution_name.cache_clear()
@@ -530,7 +537,7 @@ def refresh_editable_distributions() -> None:
     """
     name: str
     location: str
-    for name, location in get_editable_distributions_locations().items():
+    for name, location in map_editable_project_locations().items():
         _install_requirement_string(location, name=name, editable=True)
 
 
@@ -817,7 +824,7 @@ def is_editable(name: str) -> bool:
     """
     Return `True` if the indicated distribution is an editable installation.
     """
-    return bool(normalize_name(name) in get_editable_distributions_locations())
+    return bool(normalize_name(name) in map_editable_project_locations())
 
 
 def _get_setup_cfg_metadata(path: str, key: str) -> str:
@@ -946,7 +953,7 @@ def _setup_location(
 
 
 def get_editable_distribution_location(name: str) -> str:
-    return get_editable_distributions_locations().get(normalize_name(name), "")
+    return map_editable_project_locations().get(normalize_name(name), "")
 
 
 def setup_egg_info(directory: str | Path, egg_base: str = "") -> None:
@@ -1070,21 +1077,44 @@ def _install_requirement_string(
     Install a requirement string with no dependencies, compilation, build
     isolation, etc.
     """
-    command: tuple[str, ...] = (
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--no-deps",
-        "--no-compile",
-    )
-    if editable:
-        command += (
-            "-e",
-            requirement_string,
+    command: tuple[str, ...]
+    uv: str | None = shutil.which("uv")
+    if uv:
+        command = (
+            uv,
+            "pip",
+            "install",
+            "--python",
+            sys.executable,
+            "--no-deps",
+            "--no-compile",
+            *(
+                (
+                    "-e",
+                    requirement_string,
+                )
+                if editable
+                else (requirement_string,)
+            ),
         )
     else:
-        command += (requirement_string,)
+        # If `uv` is not available, use `pip`
+        command = (
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--no-compile",
+            *(
+                (
+                    "-e",
+                    requirement_string,
+                )
+                if editable
+                else (requirement_string,)
+            ),
+        )
     try:
         check_output(command)
     except CalledProcessError as error:
