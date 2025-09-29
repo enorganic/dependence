@@ -42,7 +42,7 @@ src = ""
 [tool.hatch.envs.default]
 python = "3.9"
 dependencies = ["mypy", "pytest", "ruff"]
-pre-install-commands = ["pip install --upgrade pip setuptools"]
+pre-install-commands = ["uv pip install --upgrade pip setuptools"]
 post-install-commands = [
     "hatch run mypy --install-types --non-interactive || echo",
 ]
