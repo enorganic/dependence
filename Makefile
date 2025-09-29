@@ -34,7 +34,7 @@ upgrade:
 	 --include-pointer /project\
 	 pyproject.toml && \
 	hatch run hatch-static-analysis:dependence upgrade\
-	 --include-pointer /tool/hatch/envs/docs\
+	 --include-pointer /tool/hatch/envs/hatch-static-analysis\
 	 --include-pointer /project\
 	 pyproject.toml && \
 	hatch run hatch-test.py$(PYTHON_VERSION):dependence upgrade\
