@@ -55,6 +55,7 @@ def main() -> None:
     except ImportError:
         print(get_exception_text())  # noqa: T201
         _print_help()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
