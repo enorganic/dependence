@@ -81,6 +81,7 @@ def get_frozen_requirements(  # noqa: C901
     *,
     exclude: Iterable[str] = (),
     exclude_recursive: Iterable[str] = (),
+    keep_version_specifier: Iterable[str] = (),
     no_version: Iterable[str] = (),
     dependency_order: bool = False,
     reverse: bool = False,
@@ -101,8 +102,14 @@ def get_frozen_requirements(  # noqa: C901
         exclude_recursive: One or more distributions to exclude/ignore.
             Note: Excluding a distribution here excludes all requirements which
             would be identified through recursion.
+        keep_version_specifier: Keep the original (non-frozen) version
+            specifier for package names matching any of these patterns. This
+            supercedes `no_version`, if both sets of patterns match a package
+            name.
         no_version: Exclude version numbers from the output
-            (only return distribution names)
+            (only return distribution names). This is superceded by
+            `keep_version_specifier`, if both sets of patterns match a package
+            name.
         dependency_order: Sort requirements so that dependents
             precede dependencies
         depth: Depth of recursive requirement discovery
@@ -119,6 +126,10 @@ def get_frozen_requirements(  # noqa: C901
         no_version = (no_version,)
     elif not isinstance(no_version, tuple):
         no_version = tuple(no_version)
+    if isinstance(keep_version_specifier, str):
+        keep_version_specifier = (keep_version_specifier,)
+    elif not isinstance(keep_version_specifier, tuple):
+        keep_version_specifier = tuple(keep_version_specifier)
     # Separate requirement strings from requirement files
     configuration_files: dict[str, dict[str, tuple[str, ...]]] = {}
     requirement_strings: MutableSet[str] = set()
@@ -191,6 +202,7 @@ def get_frozen_requirements(  # noqa: C901
             ),
             exclude_recursive=set(map(normalize_name, exclude_recursive)),
             no_version=no_version,
+            keep_version_specifier=keep_version_specifier,
             depth=depth,
         )
     if dependency_order:
@@ -217,13 +229,20 @@ def _iter_frozen_requirements(
     exclude_recursive: MutableSet[str],
     no_version: Iterable[str] = (),
     depth: int | None = None,
+    keep_version_specifier: Iterable[str] = (),
 ) -> Iterable[str]:
-    def get_requirement_string(distribution_name: str) -> str | None:
-        def distribution_name_matches_pattern(pattern: str) -> bool:
-            return fnmatch(distribution_name, pattern)
+    # This retains a mapping of distribution names to their original
+    # requirement strings in order to return those which match
+    # `keep_version_specifier` patterns with their original specifiers
+    distribution_names_specifiers: dict[str, str] = {}
 
+    def get_requirement_string(distribution_name: str) -> str | None:
+        if distribution_names_specifiers and (
+            distribution_name in distribution_names_specifiers
+        ):
+            return distribution_names_specifiers[distribution_name]
         if (distribution_name in _DO_NOT_PIN_DISTRIBUTION_NAMES) or any(
-            map(distribution_name_matches_pattern, no_version)
+            fnmatch(distribution_name, pattern) for pattern in no_version
         ):
             return distribution_name
         distribution: Distribution
@@ -246,6 +265,10 @@ def _iter_frozen_requirements(
         )
         if name in exclude_recursive:
             return set()
+        if keep_version_specifier and any(
+            fnmatch(name, pattern) for pattern in keep_version_specifier
+        ):
+            distribution_names_specifiers[name] = requirement_string.rstrip()
         distribution_names: MutableSet[str] = {name}
         if (depth_ is None) or depth_:
             distribution_names |= get_required_distribution_names(
