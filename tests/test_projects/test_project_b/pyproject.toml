@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools~=80.9.0",
+    "setuptools~=0.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -9,8 +9,8 @@ name = "test-project-b"
 version = "0.0.0"
 requires-python = ">=3.9"
 dependencies = [
-    "pip>=25.0",
-    "setuptools>=80.0.0",
+    "pip>=0.0",
+    "setuptools>=0.0.0",
     "ruff~=0.0",
 ]
 
