@@ -72,6 +72,7 @@ def upgrade(
         requirements,
         exclude=exclude,
         exclude_recursive=exclude_recursive,
+        keep_version_specifier="*",
         no_version="*",
         depth=depth,
         include_pointers=include_pointers,
