@@ -268,7 +268,7 @@ def _iter_frozen_requirements(
         if keep_version_specifier and any(
             fnmatch(name, pattern) for pattern in keep_version_specifier
         ):
-            distribution_names_specifiers[name] = requirement_string
+            distribution_names_specifiers[name] = requirement_string.rstrip()
         distribution_names: MutableSet[str] = {name}
         if (depth_ is None) or depth_:
             distribution_names |= get_required_distribution_names(

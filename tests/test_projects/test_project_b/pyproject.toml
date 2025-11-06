@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools~=0.0.0",
+    "setuptools~=80.9.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -9,14 +9,14 @@ name = "test-project-b"
 version = "0.0.0"
 requires-python = ">=3.9"
 dependencies = [
-    "pip>=0.0",
-    "setuptools>=0.0.0",
+    "pip>=25.0",
+    "setuptools>=80.0.0",
     "ruff~=0.0",
 ]
 
 [project.optional-dependencies]
-jsonpointer = ["jsonpointer>=0.0"]
-mypy = ["mypy>=0.0"]
+jsonpointer = ["jsonpointer>=2.0"]
+mypy = ["mypy>=1.0"]
 
 [tool.setuptools]
 packages = ["test_project_b"]
