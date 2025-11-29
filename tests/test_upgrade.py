@@ -37,6 +37,7 @@ def test_upgrade(
     try:
         upgrade(
             requirements=(str(temp_project),),
+            exclude=("pip", "setuptools"),
             all_extra_name="all",
         )
         with open(temp_project / "pyproject.toml") as temp_pyproject_io:
