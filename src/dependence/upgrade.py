@@ -27,6 +27,7 @@ def upgrade(
     exclude: Iterable[str] = (),
     exclude_recursive: Iterable[str] = (),
     depth: int | None = None,
+    echo: bool = False,
 ) -> None:
     """
     This function obtains a list of dependencies for the specified
@@ -86,7 +87,7 @@ def upgrade(
         "--upgrade",
         *frozen_requirements,
     )
-    check_output(command)
+    check_output(command, echo=echo)
     configuration_files: tuple[str, ...] = tuple(
         chain(
             *map(iter_configuration_files, requirements)  # type: ignore
