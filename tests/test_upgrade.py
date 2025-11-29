@@ -37,7 +37,9 @@ def test_upgrade(
     try:
         upgrade(
             requirements=(str(temp_project),),
+            exclude=("pip", "setuptools"),
             all_extra_name="all",
+            echo=True,
         )
         with open(temp_project / "pyproject.toml") as temp_pyproject_io:
             assert temp_pyproject_io.read() != pyproject_toml

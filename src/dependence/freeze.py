@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import os
-from collections.abc import Iterable, MutableSet
 from fnmatch import fnmatch
 from functools import partial
 from itertools import chain
@@ -21,6 +20,7 @@ from dependence._utilities import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, MutableSet
     from importlib.metadata import Distribution
 
 _DO_NOT_PIN_DISTRIBUTION_NAMES: MutableSet[str] = {
@@ -277,7 +277,7 @@ def _iter_frozen_requirements(
                 depth=None if (depth_ is None) else depth_ - 1,
             )
         return cast(
-            MutableSet[str],
+            "MutableSet[str]",
             distribution_names - exclude,
         )
 

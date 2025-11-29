@@ -6,11 +6,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dependence"
-version = "1.2.3"
+version = "1.2.4"
 description = "A dependency management tool for python projects"
 readme = "README.md"
 license = "MIT"
-requires-python = "~=3.9"
+requires-python = "~=3.10"
 authors = [
     { email = "david@belais.me" },
 ]
@@ -51,7 +51,7 @@ packages = [
 src = ""
 
 [tool.hatch.envs.default]
-python = "3.9"
+python = "3.10"
 dependencies = [
     "mypy",
     "pytest",
@@ -91,7 +91,6 @@ extra-arguments = [
 
 [[tool.hatch.envs.hatch-test.matrix]]
 python = [
-    "3.9",
     "3.10",
     "3.11",
     "3.12",
@@ -135,7 +134,7 @@ target-version = [
 ]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 files = [
     "src",
     "tests",
@@ -161,3 +160,4 @@ source = [
 
 [tool.coverage.report]
 fail_under = 70
+show_missing = true

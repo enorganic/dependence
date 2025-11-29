@@ -38,7 +38,7 @@ For example, in [this project's Makefile
 
 ```Makefile
 SHELL := bash
-PYTHON_VERSION := 3.9
+PYTHON_VERSION := 3.10
 
 upgrade:
 	hatch run dependence upgrade\
