@@ -7,8 +7,6 @@ import re
 import shutil
 import sys
 from collections import deque
-from collections.abc import Container, Hashable, Iterable, MutableSet
-from collections.abc import Set as AbstractSet
 from configparser import ConfigParser, SectionProxy
 from enum import Enum, auto
 from glob import iglob
@@ -22,8 +20,8 @@ from subprocess import DEVNULL, PIPE, CalledProcessError, list2cmdline, run
 from traceback import format_exception
 from typing import (
     IO,
+    TYPE_CHECKING,
     Any,
-    Callable,
     TypedDict,
     cast,
     overload,
@@ -34,6 +32,18 @@ import tomli
 from jsonpointer import resolve_pointer  # type: ignore
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name
+
+if TYPE_CHECKING:
+    from collections.abc import (
+        Callable,
+        Container,
+        Hashable,
+        Iterable,
+        MutableSet,
+    )
+    from collections.abc import (
+        Set as AbstractSet,
+    )
 
 _BUILTIN_DISTRIBUTION_NAMES: tuple[str] = ("distribute",)
 _UNSAFE_CHARACTERS_PATTERN: re.Pattern = re.compile("[^A-Za-z0-9.]+")
@@ -1246,7 +1256,7 @@ def _iter_requirement_names(
             yield from _iter_requirement_names(
                 requirement_,
                 exclude=cast(
-                    MutableSet[str],
+                    "MutableSet[str]",
                     exclude
                     | (
                         lateral_exclude - {_get_requirement_name(requirement_)}

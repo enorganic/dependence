@@ -1,6 +1,6 @@
 SHELL := bash
 .PHONY: docs
-PYTHON_VERSION := 3.9
+PYTHON_VERSION := 3.10
 
 # Create all environments
 install:

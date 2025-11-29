@@ -13,7 +13,6 @@ from typing import (
     IO,
     TYPE_CHECKING,
     Any,
-    Callable,
 )
 
 import tomli
@@ -35,7 +34,7 @@ from dependence._utilities import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
     from importlib.metadata import Distribution
 
 
