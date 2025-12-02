@@ -79,15 +79,16 @@ def upgrade(
         include_pointers=include_pointers,
         exclude_pointers=exclude_pointers,
     )
-    command: tuple[str, ...] = (
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--upgrade",
-        *frozen_requirements,
-    )
-    check_output(command, echo=echo)
+    if frozen_requirements:
+        command: tuple[str, ...] = (
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            *frozen_requirements,
+        )
+        check_output(command, echo=echo)
     configuration_files: tuple[str, ...] = tuple(
         chain(
             *map(iter_configuration_files, requirements)  # type: ignore
