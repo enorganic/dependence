@@ -701,6 +701,8 @@ def _is_installed_requirement_string(item: Any) -> bool:
         requirement: Requirement = Requirement(item)
     except InvalidRequirement:
         return False
+    if not requirement.name:
+        return False
     return is_installed(requirement.name)
 
 
