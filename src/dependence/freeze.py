@@ -268,7 +268,27 @@ def _iter_frozen_requirements(
         if keep_version_specifier and any(
             fnmatch(name, pattern) for pattern in keep_version_specifier
         ):
-            distribution_names_specifiers[name] = requirement_string.rstrip()
+            existing_requirement_string: str | None = (
+                distribution_names_specifiers.get(name)
+            )
+            requirement_string = requirement_string.rstrip()
+            # Prioritize requirement strings which don't include environment
+            # markers over those that do, and prefer more specific requirement
+            # strings (longer ones) over less specific requirement strings
+            if (
+                (not existing_requirement_string)
+                or (
+                    (";" in existing_requirement_string)
+                    == (";" in requirement_string)
+                    and len(existing_requirement_string)
+                    < len(requirement_string)
+                )
+                or (
+                    ";" in existing_requirement_string
+                    and ";" not in requirement_string
+                )
+            ):
+                distribution_names_specifiers[name] = requirement_string
         distribution_names: MutableSet[str] = {name}
         if (depth_ is None) or depth_:
             distribution_names |= get_required_distribution_names(
@@ -306,6 +326,7 @@ def freeze(
     depth: int | None = None,
     include_pointers: tuple[str, ...] = (),
     exclude_pointers: tuple[str, ...] = (),
+    keep_version_specifier: Iterable[str] = (),
 ) -> None:
     """
     Print the (frozen) requirements for one or more specified requirements or
@@ -343,6 +364,7 @@ def freeze(
                 depth=depth,
                 include_pointers=include_pointers,
                 exclude_pointers=exclude_pointers,
+                keep_version_specifier=keep_version_specifier,
             )
         )
     )
@@ -414,6 +436,18 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "-kvs",
+        "--keep-version-specifier",
+        type=str,
+        default=[],
+        action="append",
+        help=(
+            "Don't freeze versions (instead retain the most specific version "
+            "specifier) for packages matching this/these glob pattern(s) "
+            "(note: the value must be single-quoted if it contains wildcards)"
+        ),
+    )
+    parser.add_argument(
         "-do",
         "--dependency-order",
         default=False,
@@ -461,6 +495,7 @@ def main() -> None:
             iter_parse_delimited_values(namespace.exclude_recursive)
         ),
         no_version=namespace.no_version,
+        keep_version_specifier=namespace.keep_version_specifier,
         dependency_order=namespace.dependency_order,
         depth=namespace.depth,
         include_pointers=tuple(namespace.include_pointer),
