@@ -6,6 +6,7 @@ from collections import deque
 from configparser import ConfigParser, SectionProxy
 from copy import deepcopy
 from dataclasses import dataclass
+from fnmatch import fnmatch
 from io import StringIO
 from itertools import chain
 from pathlib import Path
@@ -117,7 +118,7 @@ def _update_requirement_specifiers(
 
 
 def _get_updated_requirement_string(
-    requirement_string: str, ignore: set[str]
+    requirement_string: str, ignore: Iterable[str]
 ) -> str:
     """
     This function updates version numbers in a requirement string to match
@@ -128,7 +129,8 @@ def _get_updated_requirement_string(
         return requirement_string
     requirement: Requirement = Requirement(requirement_string)
     name: str = normalize_name(requirement.name)
-    if name in ignore:
+    pattern: str
+    if ignore and any(fnmatch(name, pattern) for pattern in ignore):
         return requirement_string
     try:
         distribution: Distribution = get_installed_distributions()[name]
@@ -147,15 +149,6 @@ def _get_updated_requirement_string(
     return str(requirement)
 
 
-def _normalize_ignore_argument(ignore: Iterable[str]) -> set[str]:
-    ignore_set: set[str]
-    # Normalize/harmonize excluded project names
-    if isinstance(ignore, str):
-        ignore = (ignore,)
-    ignore_set = set(map(normalize_name, ignore))
-    return ignore_set
-
-
 def _get_updated_requirements_txt(
     data: str, ignore: Iterable[str] = ()
 ) -> str:
@@ -169,10 +162,10 @@ def _get_updated_requirements_txt(
     - data (str): The contents of a *requirements.txt* file
     - ignore ([str]): One or more project names to leave as-is
     """
-    ignore_set: set[str] = _normalize_ignore_argument(ignore)
+    ignore = (ignore,) if isinstance(ignore, str) else ignore
 
     def get_updated_requirement_string(requirement: str) -> str:
-        return _get_updated_requirement_string(requirement, ignore=ignore_set)
+        return _get_updated_requirement_string(requirement, ignore=ignore)
 
     return "\n".join(map(get_updated_requirement_string, data.split("\n")))
 
@@ -188,14 +181,14 @@ def _get_updated_setup_cfg(
     Parameters:
 
     - data (str): The contents of a *setup.cfg* file
-    - ignore ([str]): One or more project names to leave as-is
+    - ignore ([str]): One or more project names or patterns to leave as-is
     - all_extra_name (str): An (optional) extra name which will
       consolidate requirements from all other extras
     """
-    ignore_set: set[str] = _normalize_ignore_argument(ignore)
+    ignore = (ignore,) if isinstance(ignore, str) else ignore
 
     def get_updated_requirement_string(requirement: str) -> str:
-        return _get_updated_requirement_string(requirement, ignore=ignore_set)
+        return _get_updated_requirement_string(requirement, ignore=ignore)
 
     # Parse
     parser: ConfigParser = ConfigParser()
@@ -254,14 +247,14 @@ def _get_updated_tox_ini(data: str, ignore: Iterable[str] = ()) -> str:
     - data (str): The contents of a **tox.ini** file
     - ignore ([str]): One or more project names to leave as-is
     """
-    ignore_set: set[str] = _normalize_ignore_argument(ignore)
+    ignore = (ignore,) if isinstance(ignore, str) else ignore
 
     def get_updated_requirement_string(requirement: str) -> str:
         prefix: str | None = None
         if ":" in requirement:
             prefix, requirement = requirement.split(":", maxsplit=1)
         requirement = _get_updated_requirement_string(
-            requirement, ignore=ignore_set
+            requirement, ignore=ignore
         )
         if prefix is not None:
             requirement = f"{prefix}: {requirement.lstrip()}"
@@ -307,10 +300,10 @@ def _update_document_requirements(
     include_pointers: tuple[str, ...] = (),
     exclude_pointers: tuple[str, ...] = (),
 ) -> None:
-    ignore_set: set[str] = _normalize_ignore_argument(ignore)
+    ignore = (ignore,) if isinstance(ignore, str) else ignore
 
     def get_updated_requirement_string(requirement: str) -> str:
-        return _get_updated_requirement_string(requirement, ignore=ignore_set)
+        return _get_updated_requirement_string(requirement, ignore=ignore)
 
     # Find and update requirements
     requirements_list: list[str]
@@ -499,7 +492,7 @@ def update(
     Parameters:
         paths: One or more local paths to a pyproject.toml,
             setup.cfg, and/or requirements.txt files
-        ignore: One or more project/package names to ignore (leave
+        ignore: One or more project/package names or patterns to ignore (leave
             as-is) when updating dependency requirement specifiers.
         all_extra_name: If provided, an extra which consolidates
             the requirements for all other extras will be added/updated to
@@ -544,8 +537,8 @@ def main() -> None:
         type=str,
         action="append",
         help=(
-            "A comma-separated list of distributions to ignore (leave "
-            "any requirements pertaining to the package as-is) "
+            "A comma-separated list of distributions or patterns to ignore "
+            "(leave any requirements pertaining to the package as-is) "
         ),
     )
     parser.add_argument(
