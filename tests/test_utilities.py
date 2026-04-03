@@ -8,12 +8,13 @@ from dependence._utilities import WHICH, check_output, is_aliased
 
 
 def test_is_aliased() -> None:
-    if is_aliased("ls"):
+    command: str = "ping"
+    if is_aliased(command):
         shell_output: str = check_output(
-            (WHICH, "ls"),
+            (WHICH, command),
             shell=True,
         )
-        message: str = f"{shell_output}\n!=\n{shutil.which('ls')}"
+        message: str = f"{shell_output}\n!=\n{shutil.which(command)}"
         raise ValueError(message)
 
 
