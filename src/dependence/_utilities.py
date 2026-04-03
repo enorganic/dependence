@@ -216,6 +216,8 @@ def check_output(
         (
             list2cmdline(args)
             if (shell and not default_shell)
+            else (default_shell, list2cmdline(args))
+            if default_shell and os.name == "nt"
             else (default_shell, "-i", "-c", list2cmdline(args))
             if default_shell
             else args
