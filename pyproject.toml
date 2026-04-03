@@ -51,6 +51,7 @@ packages = [
 src = ""
 
 [tool.hatch.envs.default]
+path = ".venv"
 python = "3.10"
 dependencies = [
     "mypy",
@@ -85,8 +86,10 @@ extra-dependencies = [
     "tox",
     "black",
 ]
-extra-arguments = [
+extra-args = [
     "--cache-clear",
+    "-s",
+    "-vv",
 ]
 
 [[tool.hatch.envs.hatch-test.matrix]]

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from itertools import chain
 from typing import TYPE_CHECKING
 
 from dependence._utilities import (
     check_output,
+    is_aliased,
     iter_configuration_files,
     iter_parse_delimited_values,
 )
@@ -80,15 +82,45 @@ def upgrade(
         exclude_pointers=exclude_pointers,
     )
     if frozen_requirements:
-        command: tuple[str, ...] = (
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--upgrade",
-            *frozen_requirements,
-        )
-        check_output(command, echo=echo)
+        command: tuple[str, ...]
+        uv: str | None = shutil.which("uv")
+        shell: bool = False
+        if uv:
+            if is_aliased("uv"):
+                shell = True
+                uv = "uv"
+            command = (
+                uv,
+                "pip",
+                "install",
+                "--python",
+                sys.executable,
+                "--upgrade",
+                *frozen_requirements,
+            )
+        else:
+            # If `uv` is not available, use `pip`
+            if is_aliased("pip"):
+                shell = True
+                command = (
+                    "pip",
+                    "install",
+                    "--python",
+                    sys.executable,
+                )
+            else:
+                command = (
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                )
+            command = (
+                *command,
+                "--upgrade",
+                *frozen_requirements,
+            )
+        check_output(command, shell=shell, echo=echo)
     configuration_files: tuple[str, ...] = tuple(
         chain(
             *map(iter_configuration_files, requirements)  # type: ignore
