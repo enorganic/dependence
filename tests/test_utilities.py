@@ -4,13 +4,13 @@ import shutil
 
 import pytest
 
-from dependence._utilities import check_output, is_aliased
+from dependence._utilities import WHICH, check_output, is_aliased
 
 
 def test_is_aliased() -> None:
     if is_aliased("ls"):
         shell_output: str = check_output(
-            ("which", "ls"),
+            (WHICH, "ls"),
             shell=True,
         )
         message: str = f"{shell_output}\n!=\n{shutil.which('ls')}"

@@ -47,6 +47,7 @@ if TYPE_CHECKING:
 
 _BUILTIN_DISTRIBUTION_NAMES: tuple[str] = ("distribute",)
 _UNSAFE_CHARACTERS_PATTERN: re.Pattern = re.compile("[^A-Za-z0-9.]+")
+WHICH: str = "where" if os.name == "nt" else "which"
 
 
 class DefinitionExistsError(Exception):
@@ -519,7 +520,7 @@ def is_aliased(command: str) -> bool:
         return False
     try:
         shell_output: str = check_output(  # noqa: S604
-            ("which", command),
+            (WHICH, command),
             shell=True,
         )
     except CalledProcessError:
