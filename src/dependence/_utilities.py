@@ -513,6 +513,10 @@ def is_aliased(command: str) -> bool:
     """
     Determine if the command is aliased in the default shell environment.
     """
+    which_command: str | None = shutil.which(command)
+    if not which_command:
+        # The command does not exist
+        return False
     try:
         shell_output: str = check_output(  # noqa: S604
             ("which", command),
@@ -520,7 +524,7 @@ def is_aliased(command: str) -> bool:
         )
     except CalledProcessError:
         return False
-    return shell_output.strip() != (shutil.which(command) or "").strip()
+    return shell_output.strip() != which_command.strip()
 
 
 def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:

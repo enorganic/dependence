@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import shutil
+
 import pytest
 
-from dependence._utilities import is_aliased
+from dependence._utilities import check_output, is_aliased
 
 
 def test_is_aliased() -> None:
-    assert not is_aliased("ls")
+    if is_aliased("ls"):
+        shell_output: str = check_output(
+            ("which", "ls"),
+            shell=True,
+        )
+        message: str = f"{shell_output}\n!=\n{shutil.which('ls')}"
+        raise ValueError(message)
 
 
 if __name__ == "__main__":
