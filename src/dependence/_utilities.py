@@ -47,6 +47,7 @@ if TYPE_CHECKING:
 
 _BUILTIN_DISTRIBUTION_NAMES: tuple[str] = ("distribute",)
 _UNSAFE_CHARACTERS_PATTERN: re.Pattern = re.compile("[^A-Za-z0-9.]+")
+WHICH: str = "where" if os.name == "nt" else "which"
 
 
 class DefinitionExistsError(Exception):
@@ -192,6 +193,8 @@ def check_output(
     cwd: str | Path = "",
     *,
     echo: bool = False,
+    shell: bool = False,
+    env: dict[str, str] | None = None,
 ) -> str:
     """
     This function mimics `subprocess.check_output`, but redirects stderr
@@ -206,12 +209,28 @@ def check_output(
             print("$", "cd", cwd, "&&", list2cmdline(args))  # noqa: T201
         else:
             print("$", list2cmdline(args))  # noqa: T201
+    default_shell: str | None = (
+        (os.getenv("SHELL") or os.getenv("COMSPEC")) if shell else None
+    )
     output: str = run(
-        args,
+        (
+            list2cmdline(args)
+            if (shell and not default_shell)
+            else (default_shell, list2cmdline(args))
+            if default_shell
+            and default_shell.endswith(("pwsh.exe", "powershell.exe"))
+            else (default_shell, "/c", list2cmdline(args))
+            if default_shell and default_shell.endswith("cmd.exe")
+            else (default_shell, "-i", "-c", list2cmdline(args))
+            if default_shell
+            else args
+        ),
         stdout=PIPE,
         stderr=DEVNULL,
         check=True,
         cwd=cwd or None,
+        shell=(shell and not default_shell),
+        env=env,
     ).stdout.decode("utf-8", errors="ignore")
     if echo:
         print(output)  # noqa: T201
@@ -493,6 +512,25 @@ class PackageMetadata(TypedDict, total=False):
     name: str
     version: str
     editable_project_location: str
+
+
+@cache
+def is_aliased(command: str) -> bool:
+    """
+    Determine if the command is aliased in the default shell environment.
+    """
+    which_command: str | None = shutil.which(command)
+    if not which_command:
+        # The command does not exist
+        return False
+    try:
+        shell_output: str = check_output(  # noqa: S604
+            (WHICH, command),
+            shell=True,
+        )
+    except CalledProcessError:
+        return False
+    return shell_output.strip().lower() != which_command.strip().lower()
 
 
 def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:
@@ -1091,7 +1129,11 @@ def _install_requirement_string(
     """
     command: tuple[str, ...]
     uv: str | None = shutil.which("uv")
+    shell: bool = False
     if uv:
+        if is_aliased("uv"):
+            shell = True
+            uv = "uv"
         command = (
             uv,
             "pip",
@@ -1111,11 +1153,23 @@ def _install_requirement_string(
         )
     else:
         # If `uv` is not available, use `pip`
+        if is_aliased("pip"):
+            shell = True
+            command = (
+                "pip",
+                "install",
+                "--python",
+                sys.executable,
+            )
+        else:
+            command = (
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+            )
         command = (
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
+            *command,
             "--no-deps",
             "--no-compile",
             *(
@@ -1128,7 +1182,7 @@ def _install_requirement_string(
             ),
         )
     try:
-        check_output(command)
+        check_output(command, shell=shell)
     except CalledProcessError as error:
         message: str = (
             (
@@ -1153,7 +1207,7 @@ def _install_requirement_string(
             print(message)  # noqa: T201
             raise
         try:
-            check_output((*command, "--force-reinstall"))
+            check_output((*command, "--force-reinstall"), shell=shell)
         except CalledProcessError:
             print(message)  # noqa: T201
             raise
