@@ -217,7 +217,10 @@ def check_output(
             list2cmdline(args)
             if (shell and not default_shell)
             else (default_shell, list2cmdline(args))
-            if default_shell and os.name == "nt"
+            if default_shell
+            and default_shell.endswith(("pwsh.exe", "powershell.exe"))
+            else (default_shell, "/c", list2cmdline(args))
+            if default_shell and default_shell.endswith("cmd.exe")
             else (default_shell, "-i", "-c", list2cmdline(args))
             if default_shell
             else args
