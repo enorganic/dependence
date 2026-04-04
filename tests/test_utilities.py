@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 from subprocess import list2cmdline
+from typing import cast
 
 import pytest
 
@@ -15,12 +16,13 @@ def test_is_aliased() -> None:
         shell_output: str = check_output(
             (WHICH, command),
             shell=True,
-        )
+        ).strip()
         default_shell: str = os.getenv("SHELL") or os.getenv("COMSPEC") or "?"
+        which_command: str = cast("str", shutil.which(command)).strip()
         message: str = (
             f"Output from `{list2cmdline((WHICH, command))}` in "
             f"{default_shell}:\n"
-            f"{shell_output}\n!=\n{shutil.which(command)}"
+            f"{shell_output}\n!=\n{which_command}"
         )
         raise ValueError(message)
 

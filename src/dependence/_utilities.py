@@ -527,7 +527,7 @@ def is_aliased(command: str) -> bool:
         shell_output: str = check_output(  # noqa: S604
             (WHICH, command),
             shell=True,
-        ).rstrip()
+        )
     except CalledProcessError:
         return False
     return shell_output.strip() != which_command.strip()
