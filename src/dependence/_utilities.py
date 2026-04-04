@@ -530,7 +530,7 @@ def is_aliased(command: str) -> bool:
         )
     except CalledProcessError:
         return False
-    return shell_output.strip() != which_command.strip()
+    return shell_output.strip().lower() != which_command.strip().lower()
 
 
 def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:
