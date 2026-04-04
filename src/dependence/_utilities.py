@@ -16,7 +16,15 @@ from importlib.metadata import distributions as _get_distributions
 from itertools import chain
 from pathlib import Path
 from shutil import rmtree
-from subprocess import DEVNULL, PIPE, CalledProcessError, list2cmdline, run
+from subprocess import (
+    DEVNULL,
+    PIPE,
+    CalledProcessError,
+    run,
+)
+from subprocess import (
+    list2cmdline as _list2cmdline,
+)
 from traceback import format_exception
 from typing import (
     IO,
@@ -101,6 +109,22 @@ class Undefined:
 
 
 UNDEFINED: Undefined = Undefined()
+
+
+def list2cmdline(args: Iterable[str]) -> str:
+    """
+    This function is a wrapper around `subprocess.list2cmdline` which ensures
+    that arguments containing `[` are properly quoted, making it safe to
+    use with `zsh`.
+    """
+    return _list2cmdline(
+        (
+            f"'{arg}'"
+            if "[" in arg and not (arg.startswith("'") and arg.endswith("'"))
+            else arg
+        )
+        for arg in args
+    )
 
 
 def _undefined() -> Undefined:
