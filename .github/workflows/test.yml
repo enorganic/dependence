@@ -38,3 +38,12 @@ jobs:
       uses: pypa/hatch@install
     - name: test
       run: hatch test -py ${{ matrix.python }}
+  success:
+    name: success
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - lint
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    steps:
+      - run: echo "Success!"
