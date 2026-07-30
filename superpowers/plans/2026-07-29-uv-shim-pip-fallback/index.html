@@ -1,0 +1,939 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://enorganic.github.io/dependence/superpowers/plans/2026-07-29-uv-shim-pip-fallback/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>uv Shim Fallback to pip Implementation Plan - dependence</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/style.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#uv-shim-fallback-to-pip-implementation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="dependence" class="md-header__button md-logo" aria-label="dependence" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            dependence
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              uv Shim Fallback to pip Implementation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 5-5 5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/enorganic/dependence/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="dependence" class="md-nav__button md-logo" aria-label="dependence" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    dependence
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/enorganic/dependence/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/freeze/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    freeze
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/upgrade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    upgrade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#global-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Constraints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-1-fall-back-to-pip-in-_iter_pip_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1: Fall back to pip in _iter_pip_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-2-fall-back-to-pip-in-_install_requirement_string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2: Fall back to pip in _install_requirement_string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-3-format-lint-and-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3: Format, lint, and release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="uv-shim-fallback-to-pip-implementation-plan"><code>uv</code> Shim Fallback to <code>pip</code> Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Make <code>dependence</code>'s <code>uv</code>-based package inventory (<code>_iter_pip_list</code>)
+and editable reinstall (<code>_install_requirement_string</code>) fall back to the target
+interpreter's own <code>pip</code> when the <code>uv</code> command discovered on <code>PATH</code> fails to
+run, instead of raising <code>CalledProcessError</code>.</p>
+<p><strong>Architecture:</strong> Both functions currently pick a command shape once — <code>uv
+pip …</code> if <code>shutil.which("uv")</code> finds anything, else <code>sys.executable -m pip
+…</code> — and never reconsider it. Change each to compute <em>both</em> command shapes
+when <code>uv</code> is found, attempt the <code>uv</code> command first, and retry with the <code>pip</code>
+command only on <code>CalledProcessError</code>. This is additive: when the discovered
+<code>uv</code> already works (the common case), the fallback command never executes and
+behavior is unchanged.</p>
+<p><strong>Tech Stack:</strong> Python 3.10+, <code>subprocess</code>, <code>pytest</code>/<code>hatch test</code> (real
+subprocesses only — no mocking of <code>dependence</code>'s own interfaces, consistent
+with the existing <code>tests/test_utilities.py::test_is_aliased</code> style).</p>
+<h2 id="global-constraints">Global Constraints</h2>
+<ul>
+<li>Spec: <code>docs/superpowers/specs/2026-07-29-uv-shim-pip-fallback-design.md</code>.</li>
+<li>Reproduce the failure with a real, on-<code>PATH</code> executable that fails (not a
+  mock/monkeypatch of <code>dependence</code>'s own functions) — this repo's existing
+  tests exercise real subprocesses (<code>test_is_aliased</code>), and the bug itself is
+  a real-subprocess failure mode.</li>
+<li>No behavior change when <code>uv</code> already works or is absent from <code>PATH</code>.</li>
+<li>Do not narrow the fallback trigger to a specific exit code (e.g. 127
+  specifically) — react to any <code>CalledProcessError</code>, matching the existing
+  <code>check_output</code> contract.</li>
+<li>Do not change <code>dependence</code>'s public API or CLI (<code>freeze</code>, <code>update</code>,
+  <code>upgrade</code>).</li>
+<li>Bump <code>version</code> in <code>pyproject.toml</code> (currently <code>1.4.1</code>) as part of this
+  change.</li>
+<li>Run all commands from the repository root (<code>/Users/davidbelais/Code/dependence</code>).</li>
+</ul>
+<hr />
+<h3 id="task-1-fall-back-to-pip-in-_iter_pip_list">Task 1: Fall back to <code>pip</code> in <code>_iter_pip_list</code></h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/dependence/_utilities.py:560-586</code> (<code>_iter_pip_list</code>)
+- Modify: <code>tests/test_utilities.py</code></p>
+<p><strong>Interfaces:</strong>
+- Consumes: nothing new — <code>shutil.which("uv")</code>, <code>sys.executable</code>,
+  <code>check_output</code> (already imported/defined in this module).
+- Produces: <code>_iter_pip_list</code> keeps its existing signature and yields the same
+  <code>(normalized_name, PackageMetadata)</code> pairs; <code>map_pip_list()</code> and everything
+  built on it (<code>_iter_editable_project_locations</code>,
+  <code>map_editable_project_locations</code>, <code>refresh_editable_distributions</code>,
+  <code>get_installed_distributions</code>, <code>get_frozen_requirements</code>) are unaffected
+  beyond now succeeding in the failure scenario below.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<p>In <code>tests/test_utilities.py</code>, add a test that puts a real, on-<code>PATH</code>
+  executable named <code>uv</code> ahead of any working <code>uv</code> so <code>shutil.which("uv")</code>
+  resolves to it, and asserts <code>map_pip_list()</code> still succeeds (falling back
+  to the real interpreter's <code>pip</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dependence._utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">map_pip_list</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_map_pip_list_falls_back_to_pip_when_uv_cannot_run</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">:</span> <span class="n">pytest</span><span class="o">.</span><span class="n">MonkeyPatch</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A `uv` executable that is present on `PATH` but cannot actually run</span>
+<span class="sd">    (as happens when a security wrapper, e.g. Aikido Safe Chain&#39;s shim,</span>
+<span class="sd">    has no real `uv` to delegate to) must not prevent package discovery --</span>
+<span class="sd">    `dependence` should fall back to `pip`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">broken_uv</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+        <span class="s2">&quot;uv.bat&quot;</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span> <span class="k">else</span> <span class="s2">&quot;uv&quot;</span>
+    <span class="p">)</span>
+    <span class="n">broken_uv</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+        <span class="s2">&quot;@exit /b 127</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span> <span class="k">else</span> <span class="s2">&quot;#!/bin/sh</span><span class="se">\n</span><span class="s2">exit 127</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">broken_uv</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">broken_uv</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IEXEC</span><span class="p">)</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setenv</span><span class="p">(</span>
+        <span class="s2">&quot;PATH&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tmp_path</span><span class="si">}{</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="si">}{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="n">map_pip_list</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">packages</span> <span class="o">=</span> <span class="n">map_pip_list</span><span class="p">()</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">map_pip_list</span><span class="o">.</span><span class="n">cache_clear</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">packages</span>  <span class="c1"># the running interpreter&#39;s own site-packages</span>
+</code></pre></div>
+<p>(Add <code>import os</code> and <code>import pytest</code> to the existing import block as
+  needed — <code>monkeypatch</code> is a built-in pytest fixture, not a mock of
+  <code>dependence</code> itself.)</p>
+<ul>
+<li>[ ] <strong>Step 2: Run the test to verify it fails</strong></li>
+</ul>
+<p>Run: <code>hatch test -c -- tests/test_utilities.py::test_map_pip_list_falls_back_to_pip_when_uv_cannot_run -v</code></p>
+<p>Expected: FAIL with <code>subprocess.CalledProcessError</code> (exit 127), reproducing
+  the reported bug without needing a Safe Chain-wrapped CI runner.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement the fallback</strong></li>
+</ul>
+<p>In <code>src/dependence/_utilities.py</code>, replace <code>_iter_pip_list</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_iter_pip_list</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PackageMetadata</span><span class="p">]]:</span>
+    <span class="n">uv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">&quot;uv&quot;</span><span class="p">)</span>
+    <span class="n">pip_command</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span>
+        <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--format=json&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">output</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="k">if</span> <span class="n">uv</span><span class="p">:</span>
+        <span class="n">uv_command</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">uv</span><span class="p">,</span>
+            <span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--python&quot;</span><span class="p">,</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span>
+            <span class="s2">&quot;--format=json&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">check_output</span><span class="p">(</span><span class="n">uv_command</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">CalledProcessError</span><span class="p">:</span>
+            <span class="c1"># `uv` was found on `PATH` but could not run (for example, a</span>
+            <span class="c1"># CI security wrapper&#39;s shim with no real `uv` to delegate</span>
+            <span class="c1"># to) -- fall back to this interpreter&#39;s own `pip`.</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">check_output</span><span class="p">(</span><span class="n">pip_command</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">check_output</span><span class="p">(</span><span class="n">pip_command</span><span class="p">)</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">PackageMetadata</span>
+    <span class="k">for</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="p">(</span>
+            <span class="n">normalize_name</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]),</span>
+            <span class="n">metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div>
+<p><code>CalledProcessError</code> is already imported in this module (used by
+  <code>is_aliased</code> and <code>_install_requirement_string</code>).</p>
+<ul>
+<li>[ ] <strong>Step 4: Run the test to verify it passes</strong></li>
+</ul>
+<p>Run: <code>hatch test -c -- tests/test_utilities.py::test_map_pip_list_falls_back_to_pip_when_uv_cannot_run -v</code></p>
+<p>Expected: PASS.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run the full test suite for this module</strong></li>
+</ul>
+<p>Run: <code>hatch test -c -- tests/test_utilities.py tests/test_freeze.py -v</code></p>
+<p>Expected: all pass, including existing <code>test_is_aliased</code> and the
+  editable-project freeze tests in <code>test_freeze.py</code> — confirming no
+  regression to the (unchanged, <code>uv</code>-works) common path.</p>
+<h3 id="task-2-fall-back-to-pip-in-_install_requirement_string">Task 2: Fall back to <code>pip</code> in <code>_install_requirement_string</code></h3>
+<p><strong>Files:</strong>
+- Modify: <code>src/dependence/_utilities.py:1144-1237</code> (<code>_install_requirement_string</code>)
+- Modify: <code>tests/test_utilities.py</code></p>
+<p><strong>Interfaces:</strong>
+- Consumes: same as Task 1.
+- Produces: <code>_install_requirement_string</code> keeps its existing signature and
+  side effect (installs <code>requirement_string</code> into <code>sys.executable</code>'s
+  environment); on a <code>uv</code> failure it installs via <code>pip</code> instead, without
+  raising, before falling through to today's error/<code>--force-reinstall</code>
+  handling only if the <code>pip</code> attempt also fails.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing test</strong></li>
+</ul>
+<p>Reuse the same broken-<code>uv</code>-on-<code>PATH</code> technique from Task 1. Install a
+  small real local package editably and assert it succeeds despite the
+  broken <code>uv</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_install_requirement_string_falls_back_to_pip_when_uv_cannot_run</span><span class="p">(</span>
+    <span class="n">tmp_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">:</span> <span class="n">pytest</span><span class="o">.</span><span class="n">MonkeyPatch</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># ... same broken-`uv` PATH setup as the `_iter_pip_list` test ...</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dependence._utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">_install_requirement_string</span>
+
+    <span class="n">project_a</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+        <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;test_projects/test_project_a&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">_install_requirement_string</span><span class="p">(</span><span class="n">project_a</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test-project-a&quot;</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Assert success via `pip show`/`importlib.metadata`, then uninstall</span>
+    <span class="c1"># to leave the test environment clean.</span>
+</code></pre></div>
+<p>Use <code>tests/test_projects/test_project_a</code> (already used by
+  <code>tests/test_freeze.py</code>) rather than inventing a new fixture project.
+  Uninstall the package at the end of the test (<code>sys.executable -m pip
+  uninstall -y test-project-a</code>) so the test environment is left as found.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run the test to verify it fails</strong></li>
+</ul>
+<p>Run: <code>hatch test -c -- tests/test_utilities.py::test_install_requirement_string_falls_back_to_pip_when_uv_cannot_run -v</code></p>
+<p>Expected: FAIL with <code>CalledProcessError</code> (exit 127) from the broken <code>uv</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement the fallback</strong></li>
+</ul>
+<p>In <code>_install_requirement_string</code>, after the existing <code>if uv: … else: …</code>
+  block that builds <code>command</code>/<code>shell</code> (unchanged), replace the trailing
+  <code>try</code>/<code>except</code> (currently starting at line 1208) so a <code>uv</code>-only failure
+  retries via <code>pip</code> before falling into the existing message/reinstall logic:</p>
+<div class="highlight"><pre><span></span><code>    <span class="k">try</span><span class="p">:</span>
+        <span class="n">check_output</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="n">shell</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">uv</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">shell</span><span class="p">:</span>
+            <span class="n">pip_command</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span>
+                <span class="s2">&quot;-m&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pip&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;install&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;--no-deps&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;--no-compile&quot;</span><span class="p">,</span>
+                <span class="o">*</span><span class="p">(</span>
+                    <span class="p">(</span><span class="s2">&quot;-e&quot;</span><span class="p">,</span> <span class="n">requirement_string</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">editable</span>
+                    <span class="k">else</span> <span class="p">(</span><span class="n">requirement_string</span><span class="p">,)</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">check_output</span><span class="p">(</span><span class="n">pip_command</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">pip_error</span><span class="p">:</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="n">pip_command</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">pip_error</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span>
+        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="c1"># ... existing message-construction, unchanged, now</span>
+            <span class="c1"># describing whichever `command`/`error` reached this point ...</span>
+        <span class="p">)</span>
+        <span class="o">...</span>  <span class="c1"># existing body below is otherwise unchanged</span>
+</code></pre></div>
+<p>Keep the existing message-construction and (for <code>editable=True</code>) the
+  <code>--force-reinstall</code> retry exactly as today — they now simply operate on
+  <code>command</code>/<code>error</code>, which may be the <code>pip</code> fallback's command/error if <code>uv</code>
+  was tried and failed.</p>
+<ul>
+<li>[ ] <strong>Step 4: Run the test to verify it passes</strong></li>
+</ul>
+<p>Run: <code>hatch test -c -- tests/test_utilities.py::test_install_requirement_string_falls_back_to_pip_when_uv_cannot_run -v</code></p>
+<p>Expected: PASS.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run the full suite</strong></li>
+</ul>
+<p>Run: <code>hatch test -c -v</code></p>
+<p>Expected: all tests pass, including <code>tests/test_freeze.py</code> (which exercises
+  <code>refresh_editable_distributions</code> → <code>_install_requirement_string</code> indirectly
+  through editable test projects) and <code>tests/test_update.py</code>/<code>test_upgrade.py</code>
+  if they touch install paths.</p>
+<h3 id="task-3-format-lint-and-release">Task 3: Format, lint, and release</h3>
+<p><strong>Files:</strong>
+- Modify: <code>pyproject.toml:9</code> (version bump)</p>
+<ul>
+<li>[ ] <strong>Step 1: Format and lint</strong></li>
+</ul>
+<p>Run: <code>make format</code></p>
+<p>Expected: no diffs beyond the intended changes; no lint/type errors.</p>
+<ul>
+<li>[ ] <strong>Step 2: Bump version</strong></li>
+</ul>
+<p>Change <code>version</code> in <code>pyproject.toml</code> from <code>1.4.1</code> to <code>1.4.2</code> (patch — this
+  is a backward-compatible bug fix, no API change).</p>
+<ul>
+<li>[ ] <strong>Step 3: Full local verification</strong></li>
+</ul>
+<p>Run: <code>make test</code></p>
+<p>Expected: all tests, formatting, linting, and type-checking pass.</p>
+<ul>
+<li>[ ] <strong>Step 4: Publish</strong></li>
+</ul>
+<p>Once merged, release per <code>docs/contributing.md</code> (<code>make build</code>/publish
+  flow already configured in the <code>Makefile</code>) so <code>dependence==1.4.2</code> is
+  available on PyPI for downstream consumers.</p>
+<h2 id="verification-checklist">Verification Checklist</h2>
+<ul>
+<li>[ ] <code>_iter_pip_list</code> succeeds when <code>uv</code> is on <code>PATH</code> but cannot run,
+  provided this interpreter's own <code>pip</code> can list packages.</li>
+<li>[ ] <code>_install_requirement_string</code>'s editable-reinstall path succeeds under
+  the same condition.</li>
+<li>[ ] Neither function's behavior changes when <code>uv</code> already works or is
+  absent from <code>PATH</code> (existing test suite, especially <code>test_freeze.py</code>,
+  still passes unmodified).</li>
+<li>[ ] No mocking of <code>dependence</code>'s own functions in the new tests — only a
+  real, broken executable placed on <code>PATH</code>.</li>
+<li>[ ] <code>pyproject.toml</code> version bumped to <code>1.4.2</code>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.top"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../assets/javascripts/extra.js"></script>
+      
+    
+  </body>
+</html>
