@@ -118,7 +118,7 @@ def get_frozen_requirements(  # noqa: C901
         exclude_pointers: A tuple of JSON pointers indicating elements to
             exclude (defaults to no exclusions). Only applies to TOML files.
     """
-    if isinstance(requirements, (str, Path)):
+    if isinstance(requirements, str | Path):
         requirements = {str(requirements)}
     else:
         requirements = set(map(str, requirements))
