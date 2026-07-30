@@ -12,8 +12,8 @@ installed. Subcommands (each its own module + `main()`):
 ## Commands (run from repo root, via `hatch`)
 
 - `make install` — first-time setup (installs hatch, creates envs).
-- `make format` — `hatch fmt --formatter && hatch fmt --linter && hatch run mypy`. Run before `make test`.
-- `make test` — `hatch fmt --check && hatch run mypy && hatch test -c`.
+- `make format` — `hatch fmt --formatter && hatch fmt --linter && hatch check types`. Run before `make test`.
+- `make test` — `hatch fmt --check && hatch check types && hatch test -c`.
 - Single test: `hatch test -c -- tests/test_utilities.py::<test_name> -v`
 - `make docs` — build + serve MkDocs.
 - `make upgrade` / `make requirements` — dogfoods `dependence` on its own `pyproject.toml` per hatch env.
@@ -41,8 +41,8 @@ installed. Subcommands (each its own module + `main()`):
 
 ## Conventions
 
-- ruff line length 79, max complexity 10; mypy `disallow_untyped_defs` over
-  `src` and `tests`; ships `py.typed`.
+- ruff line length 79, max complexity 10; type-checked with `hatch check
+  types` (Pyrefly, `[tool.pyrefly]`) over `src` and `tests`; ships `py.typed`.
 - Tests use real subprocesses against `tests/test_projects/test_project_{a,b,c}`
   — don't mock `dependence`'s own interfaces. Coverage `fail_under = 70`.
 - Branches: `feature/...` / `bugfix/...`. Before PR: `make format`, `make test`.

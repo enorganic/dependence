@@ -14,6 +14,7 @@ from typing import (
     IO,
     TYPE_CHECKING,
     Any,
+    cast,
 )
 
 import tomli
@@ -132,8 +133,9 @@ def _get_updated_requirement_string(
     pattern: str
     if ignore and any(fnmatch(name, pattern) for pattern in ignore):
         return requirement_string
+    distribution: Distribution | None = None
     try:
-        distribution: Distribution = get_installed_distributions()[name]
+        distribution = get_installed_distributions()[name]
         if distribution.version is None:
             return requirement_string
         _update_requirement_specifiers(requirement, distribution.version)
@@ -432,32 +434,43 @@ def _update(
 ) -> None:
     message: str
     data: str
-    update_function: Callable[[str], str]
+    # Each branch below assigns a function with a different keyword
+    # argument set (some accept `all_extra_name`/`include_pointers`/
+    # `exclude_pointers`, others don't), each paired with exactly the
+    # kwargs it accepts -- correct by construction, but not something
+    # the type checker can verify across a shared `**kwargs` dict, so
+    # each assignment is cast to the common `Callable[..., str]` shape
+    # rather than left to narrow back to its own literal signature.
+    update_function: Callable[..., str]
     kwargs: dict[str, str | Iterable[str]] = {}
     configuration_file_type: ConfigurationFileType = (
         get_configuration_file_type(path)
     )
     if configuration_file_type == ConfigurationFileType.SETUP_CFG:
-        update_function = _get_updated_setup_cfg
+        update_function = cast("Callable[..., str]", _get_updated_setup_cfg)
         if all_extra_name:
             kwargs["all_extra_name"] = all_extra_name
     elif configuration_file_type == ConfigurationFileType.PYPROJECT_TOML:
-        update_function = _get_updated_pyproject_toml
+        update_function = cast(
+            "Callable[..., str]", _get_updated_pyproject_toml
+        )
         kwargs.update(
             all_extra_name=all_extra_name,
             include_pointers=include_pointers,
             exclude_pointers=exclude_pointers,
         )
     elif configuration_file_type == ConfigurationFileType.TOML:
-        update_function = _get_updated_toml
+        update_function = cast("Callable[..., str]", _get_updated_toml)
         kwargs.update(
             include_pointers=include_pointers,
             exclude_pointers=exclude_pointers,
         )
     elif configuration_file_type == ConfigurationFileType.TOX_INI:
-        update_function = _get_updated_tox_ini
+        update_function = cast("Callable[..., str]", _get_updated_tox_ini)
     elif configuration_file_type == ConfigurationFileType.REQUIREMENTS_TXT:
-        update_function = _get_updated_requirements_txt
+        update_function = cast(
+            "Callable[..., str]", _get_updated_requirements_txt
+        )
     else:
         message = f"Updating requirements for {path!s} is not supported"
         raise NotImplementedError(message)

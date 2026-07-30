@@ -548,12 +548,12 @@ def is_aliased(command: str) -> bool:
         # The command does not exist
         return False
     try:
-        shell_output: str = check_output(
+        shell_output: str = check_output(  # noqa: S604
             (WHICH, command),
             # This must run in the user's actual
             # shell to detect shell aliases/functions; there is no
             # non-shell equivalent for this check
-            shell=True,  # noqa: S604
+            shell=True,
         )
     except CalledProcessError:
         return False
@@ -912,7 +912,7 @@ def is_editable(name: str) -> bool:
     """
     Return `True` if the indicated distribution is an editable installation.
     """
-    return bool(normalize_name(name) in map_editable_project_locations())
+    return normalize_name(name) in map_editable_project_locations()
 
 
 def _get_setup_cfg_metadata(path: str, key: str) -> str:
@@ -1030,8 +1030,6 @@ def _setup_location(
     # If there is no setup.py file, we can't update egg info
     if not location.joinpath("setup.py").is_file():
         return
-    if isinstance(arguments, str):
-        arguments = (arguments,)
     current_directory: Path = Path(os.curdir).absolute()
     os.chdir(location)
     try:
