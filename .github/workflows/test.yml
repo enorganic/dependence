@@ -11,6 +11,8 @@ on:
     - tests/**
     - "*_requirements.txt"
     - .github/workflows/test.yml
+permissions:
+  contents: read
 jobs:
   lint:
     runs-on: ubuntu-latest
