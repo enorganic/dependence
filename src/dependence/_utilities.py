@@ -550,6 +550,9 @@ def is_aliased(command: str) -> bool:
     try:
         shell_output: str = check_output(  # noqa: S604
             (WHICH, command),
+            # This must run in the user's actual
+            # shell to detect shell aliases/functions; there is no
+            # non-shell equivalent for this check
             shell=True,
         )
     except CalledProcessError:
@@ -578,10 +581,14 @@ def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:
         )
         try:
             output = check_output(uv_command)
-        except CalledProcessError:
-            # `uv` was found on `PATH` but could not run (for example, a
-            # CI security wrapper's shim with no real `uv` to delegate
-            # to) -- fall back to this interpreter's own `pip`.
+        except (CalledProcessError, OSError):
+            # `uv` was found on `PATH` but could not run -- either it
+            # ran and exited non-zero (for example, a CI security
+            # wrapper's shim with no real `uv` to delegate to,
+            # `CalledProcessError`), or it could not be executed at
+            # all (a dangling shebang, a corrupted binary, or a
+            # permission error, `OSError`) -- fall back to this
+            # interpreter's own `pip`.
             output = check_output(pip_command)
     else:
         output = check_output(pip_command)
@@ -905,7 +912,7 @@ def is_editable(name: str) -> bool:
     """
     Return `True` if the indicated distribution is an editable installation.
     """
-    return bool(normalize_name(name) in map_editable_project_locations())
+    return normalize_name(name) in map_editable_project_locations()
 
 
 def _get_setup_cfg_metadata(path: str, key: str) -> str:
@@ -1023,8 +1030,6 @@ def _setup_location(
     # If there is no setup.py file, we can't update egg info
     if not location.joinpath("setup.py").is_file():
         return
-    if isinstance(arguments, str):
-        arguments = (arguments,)
     current_directory: Path = Path(os.curdir).absolute()
     os.chdir(location)
     try:
@@ -1148,6 +1153,24 @@ def install_requirement(requirement: str | Requirement) -> None:
     return _install_requirement(requirement)
 
 
+def _raise_oserror(
+    error: CalledProcessError | OSError,
+) -> CalledProcessError:
+    """
+    Used by `_install_requirement_string` when there is no `uv`
+    fallback to attempt (`uv` was absent from `PATH`, so `error` is
+    this interpreter's own `pip` failing on its sole attempt): if
+    `error` is an `OSError`, there is no `.output` to report via the
+    caller's message construction, so re-raise it as-is. A
+    `CalledProcessError` is exactly what `_install_requirement_string`
+    already raised before its `uv` fallback existed, so it is returned
+    unchanged for the caller to handle the same way as before.
+    """
+    if isinstance(error, OSError):
+        raise error
+    return error
+
+
 def _install_requirement_string(
     requirement_string: str,
     name: str = "",
@@ -1214,17 +1237,19 @@ def _install_requirement_string(
         )
     try:
         check_output(command, shell=shell)
-    except CalledProcessError as uv_error:
-        # Reassigned below if the `pip` fallback also fails, so the
-        # rest of this handler (including the bare re-raise) reports
-        # whichever command actually produced the *last* failure.
-        # Keep this as `except ... as uv_error` + assignment (not
-        # `except ... as error`) -- `error` is deliberately mutable.
-        error: CalledProcessError = uv_error
+    except (CalledProcessError, OSError) as uv_error:
+        # Reassigned below if `uv` was attempted and the `pip`
+        # fallback also fails, so the rest of this handler (including
+        # the bare re-raise) reports whichever command actually
+        # produced the *last* failure.
+        error: CalledProcessError
         if uv:
-            # `uv` was found on `PATH` but could not run (for example, a
-            # CI security wrapper's shim with no real `uv` to delegate
-            # to) -- fall back to this interpreter's own `pip`.
+            # `uv` was found on `PATH` but failed -- either it ran and
+            # exited non-zero (`CalledProcessError`, for example a CI
+            # security wrapper's shim with no real `uv` to delegate
+            # to) or it could not be executed at all (`OSError`: a
+            # dangling shebang, a corrupted binary, or a permission
+            # error) -- fall back to this interpreter's own `pip`.
             pip_command: tuple[str, ...] = (
                 sys.executable,
                 "-m",
@@ -1245,6 +1270,10 @@ def _install_requirement_string(
                 error = pip_error
             else:
                 return
+        else:
+            # No `uv` was attempted (`command` is already the `pip`
+            # command) -- there is nothing to fall back to.
+            error = _raise_oserror(uv_error)
         message: str = (
             (
                 f"\nCould not install {name}:"

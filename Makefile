@@ -60,12 +60,12 @@ requirements:
 format:
 	hatch fmt --formatter && \
 	hatch fmt --linter && \
-	hatch run mypy && \
+	hatch check types && \
 	echo "Format Successful!"
 
 # Test & check linting/formatting (for local use only)
 test:
-	hatch fmt --check && hatch run mypy && hatch test -c
+	hatch fmt --check && hatch check types && hatch test -c
 
 docs:
 	hatch run docs:mkdocs build && \

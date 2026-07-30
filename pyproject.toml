@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dependence"
-version = "1.4.2"
+version = "1.4.3"
 description = "A dependency management tool for python projects"
 readme = "README.md"
 license = "MIT"
@@ -54,15 +54,11 @@ src = ""
 path = ".venv"
 python = "3.10"
 dependencies = [
-    "mypy",
     "pytest",
     "ruff",
 ]
 pre-install-commands = [
     "uv pip install --upgrade pip setuptools",
-]
-post-install-commands = [
-    "hatch run mypy --install-types --non-interactive || echo",
 ]
 
 [tool.hatch.envs.docs]
@@ -81,7 +77,6 @@ skip-install = false
 template = "hatch-test"
 extra-dependencies = [
     "ruff",
-    "mypy",
     "flake8",
     "tox",
     "black",
@@ -136,17 +131,17 @@ target-version = [
     "py313",
 ]
 
-[tool.mypy]
-python_version = "3.10"
-files = [
+[tool.pyrefly]
+project-includes = [
     "src",
     "tests",
 ]
-exclude = [
-    "tests/test_projects",
+project-excludes = [
+    "**/tests/test_projects*",
 ]
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+python-version = "3.10.0"
+check-unannotated-defs = true
+infer-return-types = "never"
 
 [tool.coverage.run]
 include = [

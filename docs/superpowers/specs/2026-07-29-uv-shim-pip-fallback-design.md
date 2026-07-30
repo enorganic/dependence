@@ -80,12 +80,14 @@ selected — the choice at the top of the function is final.
 
 ### Shared fallback semantics
 
-When a `uv`-based command fails (any nonzero exit, matching the existing
-`check_output`/`CalledProcessError` contract — the failure is not narrowed to
-exit code 127 specifically, since a wrapper can fail in more than one way),
-retry once with the equivalent `sys.executable -m pip` command for the same
-operation. If `uv` was not selected in the first place (not found on `PATH`),
-behavior is unchanged — there is nothing to fall back from.
+When a `uv`-based command fails — any nonzero exit (`CalledProcessError`,
+matching the existing `check_output` contract, not narrowed to exit code 127
+specifically, since a wrapper can fail in more than one way) *or* the `uv`
+executable cannot be run at all (`OSError`: a dangling shebang, a corrupted
+binary, or a permission error) — retry once with the equivalent
+`sys.executable -m pip` command for the same operation. If `uv` was not
+selected in the first place (not found on `PATH`), behavior is unchanged —
+there is nothing to fall back from.
 
 This is strictly additive: environments where the discovered `uv` already
 works see no behavior change, since the fallback command never executes.
@@ -93,22 +95,28 @@ works see no behavior change, since the fallback command never executes.
 ### `_iter_pip_list`
 
 Compute both the `uv`-based and `pip`-based `list` commands whenever `uv` is
-found. Attempt the `uv` command; on `CalledProcessError`, attempt the `pip`
-command and use its output instead. A plain `pip list --format=json` result
-includes the same fields this function consumes today, including
-`editable_project_location` — confirmed by inspection of installed CPython
-`pip` output — so no downstream field-mapping changes are needed.
+found. Attempt the `uv` command; on `CalledProcessError` or `OSError`,
+attempt the `pip` command and use its output instead. A plain
+`pip list --format=json` result includes the same fields this function
+consumes today, including `editable_project_location` — confirmed by
+inspection of installed CPython `pip` output — so no downstream
+field-mapping changes are needed.
 
 ### `_install_requirement_string`
 
 Compute both the `uv`-based and `pip`-based `install` commands whenever `uv`
-is found. Attempt the `uv` command; on `CalledProcessError`, attempt the
-`pip` command before falling through to the function's existing
+is found. Attempt the `uv` command; on `CalledProcessError` or `OSError`,
+attempt the `pip` command before falling through to the function's existing
 error-message construction and (for editable installs) `--force-reinstall`
 retry. If the `pip` fallback succeeds, return normally — no error is raised
-and no message is printed. If the `pip` fallback also fails, the existing
-downstream logic proceeds using the `pip` command and its error, since `uv`
-has already proven unusable.
+and no message is printed. If the `pip` fallback also fails with a
+`CalledProcessError`, the existing downstream logic proceeds using the `pip`
+command and its error, since `uv` has already proven unusable (its own
+failure, whichever type, is preserved as the propagated error's implicit
+`__context__`). If `uv` was never attempted (not found on `PATH`) and the
+sole `pip` attempt itself raises `OSError`, there is no fallback and no
+`.output` to report — it propagates immediately, unchanged from behavior
+before this fallback existed.
 
 ### Scope boundary
 
@@ -127,6 +135,7 @@ only reacts to the command it chose failing to run.
 | `uv` on `PATH` runs successfully | Behavior unchanged; `pip` fallback command never executes. |
 | No `uv` on `PATH` | Behavior unchanged; `pip` command used directly, as today. |
 | `uv` on `PATH` is a non-functional wrapper (e.g. exits 127) | `pip list`/`pip install` fallback runs and succeeds; the caller sees no exception. |
+| `uv` on `PATH` cannot be executed at all (dangling shebang, corrupted binary, permission error — `OSError`) | Same fallback runs and succeeds; the caller sees no exception. |
 | `uv` on `PATH` fails and the `pip` fallback also fails (list) | The original failure mode is preserved: `CalledProcessError` propagates. |
 | `uv` on `PATH` fails and the `pip` fallback also fails (editable install) | Existing error-message and `--force-reinstall` retry behavior applies, now describing the `pip` attempt. |
 | Editable project's `editable_project_location` metadata | Present and equivalent whether discovered via `uv pip list` or `pip list`. |
