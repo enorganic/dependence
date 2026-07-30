@@ -548,9 +548,9 @@ def is_aliased(command: str) -> bool:
         # The command does not exist
         return False
     try:
-        shell_output: str = check_output(
+        shell_output: str = check_output(  # noqa: S604
             (WHICH, command),
-            shell=True,  # noqa: S604
+            shell=True,
         )
     except CalledProcessError:
         return False

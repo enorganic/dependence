@@ -9,6 +9,8 @@ import sys
 from subprocess import list2cmdline
 from typing import TYPE_CHECKING, cast
 
+from dependence._utilities import _install_requirement_string
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -77,8 +79,6 @@ def test_install_requirement_string_falls_back_to_pip_when_uv_cannot_run(
     currently supported Python, so those fixtures cannot be installed
     for real. A small installable package is built here instead.
     """
-    from dependence._utilities import _install_requirement_string
-
     broken_uv: Path = tmp_path.joinpath(
         "uv.bat" if sys.platform == "win32" else "uv"
     )
@@ -141,7 +141,6 @@ def test_install_requirement_string_raises_pip_error_when_uv_and_pip_both_fail(
     the nested `try`/`except` for the `pip` fallback exits without
     itself re-raising.
     """
-    from dependence._utilities import _install_requirement_string
 
     broken_uv: Path = tmp_path.joinpath(
         "uv.bat" if sys.platform == "win32" else "uv"
