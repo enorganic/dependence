@@ -18,7 +18,7 @@ Fable continuously.
 
 This is **opt-in only**: nothing in this repo enables it by default. Running
 this skill writes to `.claude/settings.local.json` and
-`.claude/fableplan-backup.json` — both gitignored and specific to this
+`.claude/.fableplan-backup.json` — both gitignored and specific to this
 machine. Nothing is committed, and no other user or repo config is affected.
 
 Adapted from [bapttiste73/fableplan](https://github.com/bapttiste73/fableplan)
@@ -37,7 +37,7 @@ to this repo's local settings file so the effect stays scoped to this repo.
 
 1. Read `.claude/settings.local.json` (repo-relative). If it does not exist,
    create it with an empty object first.
-2. If `.claude/fableplan-backup.json` does not exist, create it before changing
+2. If `.claude/.fableplan-backup.json` does not exist, create it before changing
    settings. Record whether `"model"` exists and its current value, and whether
    `"env"."ANTHROPIC_DEFAULT_OPUS_MODEL"` exists and its current value. This
    backup represents the pre-fableplan configuration and must not be overwritten
@@ -64,14 +64,14 @@ to this repo's local settings file so the effect stays scoped to this repo.
 1. Read `.claude/settings.local.json`. If it does not exist, there is nothing
    to do — tell the user fableplan is already off (it was never enabled on
    this machine).
-2. Read `.claude/fableplan-backup.json`. If it does not exist, do not change
+2. Read `.claude/.fableplan-backup.json`. If it does not exist, do not change
    `"model"` or `"ANTHROPIC_DEFAULT_OPUS_MODEL"`: their origin cannot be
    determined safely. Tell the user that fableplan's backup is missing and its
    settings were left intact.
 3. Otherwise, restore `"model"` and `"env"."ANTHROPIC_DEFAULT_OPUS_MODEL"` to
    the values recorded in the backup. Remove each key when the backup records
    that it was absent; drop the `"env"` key entirely if it becomes empty. Leave
-   every other key untouched, then delete `.claude/fableplan-backup.json`.
+   every other key untouched, then delete `.claude/.fableplan-backup.json`.
 4. Validate JSON and tell the user:
    - Fableplan is disabled on this machine; the repo's normal model
      configuration applies again.

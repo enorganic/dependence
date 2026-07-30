@@ -408,7 +408,7 @@ def iter_find_qualified_lists(
     if isinstance(data, dict):
         value: Any
         for value in data.values():
-            if isinstance(value, (list, dict)):
+            if isinstance(value, list | dict):
                 yield from iter_find_qualified_lists(
                     value, item_condition, exclude_object_ids
                 )
@@ -418,7 +418,7 @@ def iter_find_qualified_lists(
         for item in data:
             if not item_condition(item):
                 matched = False
-            if isinstance(item, (list, dict)):
+            if isinstance(item, list | dict):
                 yield from iter_find_qualified_lists(
                     item, item_condition, exclude_object_ids
                 )
@@ -548,9 +548,9 @@ def is_aliased(command: str) -> bool:
         # The command does not exist
         return False
     try:
-        shell_output: str = check_output(  # noqa: S604
+        shell_output: str = check_output(
             (WHICH, command),
-            shell=True,
+            shell=True,  # noqa: S604
         )
     except CalledProcessError:
         return False
@@ -559,9 +559,16 @@ def is_aliased(command: str) -> bool:
 
 def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:
     uv: str | None = shutil.which("uv")
-    command: tuple[str, ...]
+    pip_command: tuple[str, ...] = (
+        sys.executable,
+        "-m",
+        "pip",
+        "list",
+        "--format=json",
+    )
+    output: str
     if uv:
-        command = (
+        uv_command: tuple[str, ...] = (
             uv,
             "pip",
             "list",
@@ -569,17 +576,17 @@ def _iter_pip_list() -> Iterable[tuple[str, PackageMetadata]]:
             sys.executable,
             "--format=json",
         )
+        try:
+            output = check_output(uv_command)
+        except CalledProcessError:
+            # `uv` was found on `PATH` but could not run (for example, a
+            # CI security wrapper's shim with no real `uv` to delegate
+            # to) -- fall back to this interpreter's own `pip`.
+            output = check_output(pip_command)
     else:
-        # If `uv` is not available, use `pip`
-        command = (
-            sys.executable,
-            "-m",
-            "pip",
-            "list",
-            "--format=json",
-        )
+        output = check_output(pip_command)
     metadata: PackageMetadata
-    for metadata in json.loads(check_output(command)):
+    for metadata in json.loads(output):
         yield (
             normalize_name(metadata["name"]),
             metadata,
@@ -809,7 +816,7 @@ def iter_find_requirements_lists(
                 include_pointers,
             ),
         ):
-            if isinstance(included_element, (list, dict)):
+            if isinstance(included_element, list | dict):
                 yield from iter_find_qualified_lists(
                     included_element,
                     item_condition=_is_installed_requirement_string,
@@ -1207,7 +1214,37 @@ def _install_requirement_string(
         )
     try:
         check_output(command, shell=shell)
-    except CalledProcessError as error:
+    except CalledProcessError as uv_error:
+        # Reassigned below if the `pip` fallback also fails, so the
+        # rest of this handler (including the bare re-raise) reports
+        # whichever command actually produced the *last* failure.
+        # Keep this as `except ... as uv_error` + assignment (not
+        # `except ... as error`) -- `error` is deliberately mutable.
+        error: CalledProcessError = uv_error
+        if uv:
+            # `uv` was found on `PATH` but could not run (for example, a
+            # CI security wrapper's shim with no real `uv` to delegate
+            # to) -- fall back to this interpreter's own `pip`.
+            pip_command: tuple[str, ...] = (
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "--no-deps",
+                "--no-compile",
+                *(
+                    ("-e", requirement_string)
+                    if editable
+                    else (requirement_string,)
+                ),
+            )
+            try:
+                check_output(pip_command)
+            except CalledProcessError as pip_error:
+                command = pip_command
+                error = pip_error
+            else:
+                return
         message: str = (
             (
                 f"\nCould not install {name}:"
@@ -1229,7 +1266,20 @@ def _install_requirement_string(
         )
         if not editable:
             print(message)  # noqa: T201
-            raise
+            # Raise `error` explicitly (not a bare `raise`) so that if
+            # the `pip` fallback above also failed, we propagate *that*
+            # failure -- a bare `raise` here would re-raise `uv_error`
+            # because the "currently handled exception" reverts to it
+            # once the nested try/except above exits without itself
+            # re-raising. When the fallback was never attempted (or
+            # wasn't needed), `error` is still `uv_error`, so this is
+            # equivalent to a bare `raise`. We don't use
+            # `raise error from uv_error`: when `error is uv_error`
+            # that would set `error.__cause__` to itself, which is an
+            # observable oddity for no benefit -- Python's implicit
+            # exception chaining already sets `error.__context__` to
+            # `uv_error` whenever they are different objects.
+            raise error  # noqa: B904 -- see comment above; `from` is intentionally omitted
         try:
             check_output((*command, "--force-reinstall"), shell=shell)
         except CalledProcessError:

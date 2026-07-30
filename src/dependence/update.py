@@ -507,7 +507,7 @@ def update(
             files (including pyproject.toml), and is ignored for all other
             file types.
     """
-    if isinstance(paths, (str, Path)):
+    if isinstance(paths, str | Path):
         paths = (paths,)
 
     def update_(path: str | Path) -> None:
