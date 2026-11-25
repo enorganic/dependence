@@ -13,6 +13,7 @@ from dependence.update import (
     _get_updated_pyproject_toml,
     _get_updated_requirements_txt,
     _get_updated_setup_cfg,
+    _update_requirement_specifiers,
 )
 
 TEST_PROJECT_A: Path = (
@@ -75,6 +76,53 @@ def validate_requirements(requirements: Iterable[str]) -> None:
     if isinstance(requirements, str):
         requirements = requirements.split("\n")
     deque(map(validate_requirement, requirements), maxlen=0)
+
+
+@pytest.mark.parametrize(
+    (
+        "specifier_string",
+        "installed_version_string",
+        "expected_specifier_string",
+    ),
+    [
+        ("==0.0.0", "1.2.3", "==1.2.3"),
+        (">=0.0", "1.2.3", ">=1.2"),
+        ("<=0.0", "1.2.3", "<=1.2"),
+        ("~=0.0", "1.2.3", "~=1.2"),
+        ("==0.0.0.0", "1.2.3", "==1.2.3"),
+        ("==0.0.0", "2!1.2.3", "==2!1.2.3"),
+        ("~=0.0", "2!1.2.3", "~=2!1.2"),
+        ("==0.0.0", "1.2.3rc1", "==1.2.3rc1"),
+        ("==0.0.0", "1.2.3.post0", "==1.2.3.post0"),
+        ("==0.0.0", "1.2.3.dev0", "==1.2.3.dev0"),
+        ("==0.0.0", "1.2.3+linux.1", "==1.2.3+linux.1"),
+        (
+            "==0.0.0",
+            "2!1.2.3rc1.post2.dev3+linux.1",
+            "==2!1.2.3rc1.post2.dev3+linux.1",
+        ),
+        (
+            "==0.0.0.0",
+            "2!1.2.3rc1.post2.dev3+linux.1",
+            "==2!1.2.3rc1.post2.dev3+linux.1",
+        ),
+        ("~=0.0", "2!1.2.3rc1.post2.dev3+linux.1", "~=2!1.2"),
+        ("~=0.0", "1.2.3rc1.post2.dev3+linux.1", "~=1.2"),
+        ("!=0.0", "1.2.3", "!=0.0"),
+        (">0.0", "1.2.3", ">0.0"),
+        ("<2.0", "1.2.3", "<2.0"),
+        ("", "1.2.3", ""),
+        (">=0.0,!=0.5,<2", "1.2.3", "!=0.5,<2,>=1.2"),
+    ],
+)
+def test_update_requirement_specifiers(
+    specifier_string: str,
+    installed_version_string: str,
+    expected_specifier_string: str,
+) -> None:
+    requirement: Requirement = Requirement(f"example{specifier_string}")
+    _update_requirement_specifiers(requirement, installed_version_string)
+    assert str(requirement.specifier) == expected_specifier_string
 
 
 def test_get_updated_setup_cfg() -> None:
