@@ -59,7 +59,12 @@ def _update_requirement_specifiers(
             if specifier_version.release is None:
                 updated_specifier_strings.append(f"{specifier.operator}")
             else:
-                version_string: str = str(installed_version)
+                # Only equality specifiers permit local version identifiers.
+                version_string: str = (
+                    str(installed_version)
+                    if specifier.operator in ("==", "===")
+                    else installed_version.public
+                )
                 if len(specifier_version.release) < len(
                     installed_version.release
                 ):

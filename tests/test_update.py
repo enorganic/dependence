@@ -96,6 +96,11 @@ def validate_requirements(requirements: Iterable[str]) -> None:
         ("==0.0.0", "1.2.3.post0", "==1.2.3.post0"),
         ("==0.0.0", "1.2.3.dev0", "==1.2.3.dev0"),
         ("==0.0.0", "1.2.3+linux.1", "==1.2.3+linux.1"),
+        ("===0.0.0", "1.2.3+linux.1", "===1.2.3+linux.1"),
+        (">=2.1.0", "2.1.0+cu118", ">=2.1.0"),
+        ("<=0.0.0", "1.2.3+linux.1", "<=1.2.3"),
+        ("~=0.0.0", "1.2.3+linux.1", "~=1.2.3"),
+        (">=0.0.0.0", "1.2.3+linux.1", ">=1.2.3"),
         (
             "==0.0.0",
             "2!1.2.3rc1.post2.dev3+linux.1",
@@ -105,6 +110,21 @@ def validate_requirements(requirements: Iterable[str]) -> None:
             "==0.0.0.0",
             "2!1.2.3rc1.post2.dev3+linux.1",
             "==2!1.2.3rc1.post2.dev3+linux.1",
+        ),
+        (
+            ">=0.0.0",
+            "2!1.2.3rc1.post2.dev3+linux.1",
+            ">=2!1.2.3rc1.post2.dev3",
+        ),
+        (
+            "<=0.0.0",
+            "2!1.2.3rc1.post2.dev3+linux.1",
+            "<=2!1.2.3rc1.post2.dev3",
+        ),
+        (
+            "~=0.0.0",
+            "2!1.2.3rc1.post2.dev3+linux.1",
+            "~=2!1.2.3rc1.post2.dev3",
         ),
         ("~=0.0", "2!1.2.3rc1.post2.dev3+linux.1", "~=2!1.2"),
         ("~=0.0", "1.2.3rc1.post2.dev3+linux.1", "~=1.2"),

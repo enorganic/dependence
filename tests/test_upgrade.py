@@ -33,10 +33,11 @@ def test_upgrade(
     )
     if dependency_requirement and dependency_name not in ("pip", "setuptools"):
         # Keep the selected dependency major throughout the upgrade operation.
-        constraints_path: Path = temp_directory / "constraints.txt"
+        # Exercise constraint paths containing spaces on every platform.
+        constraints_path: Path = temp_directory / "dependency constraints.txt"
         constraints_path.write_text(f"{dependency_requirement}\n")
-        monkeypatch.setenv("PIP_CONSTRAINT", str(constraints_path))
-        monkeypatch.setenv("UV_CONSTRAINT", str(constraints_path))
+        monkeypatch.setenv("PIP_CONSTRAINT", constraints_path.as_uri())
+        monkeypatch.setenv("UV_CONSTRAINT", constraints_path.as_uri())
     source_project: Path = TEST_DIRECTORY / "test_projects/test_project_b"
     temp_project: Path = temp_directory / "test_project_b"
     copytree(source_project, temp_project)
