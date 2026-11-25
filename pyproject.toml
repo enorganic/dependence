@@ -19,12 +19,12 @@ keywords = [
     "requirements",
 ]
 dependencies = [
-    "packaging",
-    "pip",
+    "packaging>23,<27",
+    "pip>23",
     "setuptools>63",
     "tomli-w~=1.2",
     "tomli~=2.4",
-    "jsonpointer",
+    "jsonpointer<4",
 ]
 
 [project.scripts]
@@ -75,6 +75,7 @@ skip-install = false
 
 [tool.hatch.envs.hatch-test]
 template = "hatch-test"
+matrix-name-format = "{variable}{value}"
 extra-dependencies = [
     "ruff",
     "flake8",
@@ -87,12 +88,85 @@ extra-args = [
     "-vv",
 ]
 
+[tool.hatch.envs.hatch-test.overrides]
+matrix.packaging.extra-dependencies = ["packaging=={matrix:packaging}.*"]
+matrix.packaging.env-vars = [
+    "DEPENDENCE_TEST_REQUIREMENT=packaging=={matrix:packaging}.*",
+]
+matrix.pip.extra-dependencies = ["pip=={matrix:pip}.*"]
+matrix.pip.env-vars = [
+    "DEPENDENCE_TEST_REQUIREMENT=pip=={matrix:pip}.*",
+]
+matrix.setuptools.extra-dependencies = ["setuptools=={matrix:setuptools}.*"]
+matrix.setuptools.env-vars = [
+    "DEPENDENCE_TEST_REQUIREMENT=setuptools=={matrix:setuptools}.*",
+]
+matrix.jsonpointer.extra-dependencies = ["jsonpointer=={matrix:jsonpointer}.*"]
+matrix.jsonpointer.env-vars = [
+    "DEPENDENCE_TEST_REQUIREMENT=jsonpointer=={matrix:jsonpointer}.*",
+]
+
 [[tool.hatch.envs.hatch-test.matrix]]
 python = [
     "3.10",
     "3.11",
     "3.12",
     "3.13",
+]
+
+# Exercise dependency majors independently on the oldest supported Python.
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.11"]
+packaging = [
+    "23",
+    "24",
+    "25",
+    "26",
+]
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.11"]
+pip = [
+    "23",
+    "24",
+    "25",
+    "26",
+]
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.11"]
+setuptools = [
+    "63",
+    "64",
+    "65",
+    "66",
+    "67",
+    "68",
+    "69",
+    "70",
+    "71",
+    "72",
+    "73",
+    "74",
+    "75",
+    "76",
+    "77",
+    "78",
+    "79",
+    "80",
+    "81",
+    "82",
+    "83",
+    "84",
+]
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.11"]
+jsonpointer = [
+    "0",
+    "1",
+    "2",
+    "3",
 ]
 
 [tool.ruff]
