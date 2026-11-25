@@ -5,7 +5,6 @@ import re
 from collections import deque
 from configparser import ConfigParser, SectionProxy
 from copy import deepcopy
-from dataclasses import dataclass
 from fnmatch import fnmatch
 from io import StringIO
 from itertools import chain
@@ -40,22 +39,6 @@ if TYPE_CHECKING:
     from importlib.metadata import Distribution
 
 
-@dataclass
-class _Version:
-    """
-    Instances of this class can be be passed as `self` in a call
-    to `packaging.version.Version.__str__`, and thereby can facilitate
-    operations to mimic mutability for the aforementioned class.
-    """
-
-    epoch: int
-    release: tuple[int, ...]
-    pre: Any
-    post: Any
-    dev: Any
-    local: Any
-
-
 def _update_requirement_specifiers(
     requirement: Requirement, installed_version_string: str
 ) -> None:
@@ -76,40 +59,29 @@ def _update_requirement_specifiers(
             if specifier_version.release is None:
                 updated_specifier_strings.append(f"{specifier.operator}")
             else:
-                greater_or_equal_specificity: bool = len(
-                    specifier_version.release
-                ) >= len(installed_version.release)
-                specifier_version_data: _Version = _Version(
-                    epoch=installed_version.epoch,
-                    # Truncate the updated version requirement at the same
-                    # level of specificity as the old
-                    release=installed_version.release[
-                        : len(specifier_version.release)
-                    ],
-                    pre=(
-                        installed_version.pre
-                        if greater_or_equal_specificity
-                        else None
-                    ),
-                    post=(
-                        installed_version.post
-                        if greater_or_equal_specificity
-                        else None
-                    ),
-                    dev=(
-                        installed_version.dev
-                        if greater_or_equal_specificity
-                        else None
-                    ),
-                    local=(
-                        installed_version.local
-                        if greater_or_equal_specificity
-                        else None
-                    ),
+                # Only equality specifiers permit local version identifiers.
+                version_string: str = (
+                    str(installed_version)
+                    if specifier.operator in ("==", "===")
+                    else installed_version.public
                 )
-                version_string: str = Version.__str__(
-                    specifier_version_data  # type: ignore
-                )
+                if len(specifier_version.release) < len(
+                    installed_version.release
+                ):
+                    # Truncate to the original release precision, dropping
+                    # suffixes that apply only to the full release.
+                    version_string = ".".join(
+                        map(
+                            str,
+                            installed_version.release[
+                                : len(specifier_version.release)
+                            ],
+                        )
+                    )
+                    if installed_version.epoch:
+                        version_string = (
+                            f"{installed_version.epoch}!{version_string}"
+                        )
                 updated_specifier_strings.append(
                     f"{specifier.operator}{version_string}"
                 )
